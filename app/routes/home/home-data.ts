@@ -65,10 +65,10 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: Library,
       },
       {
-        title: "Interval Explorer",
+        title: "Interval Learn",
         href: "/interval",
         description:
-          "Pahami jarak nada, konsonansi, dan dengarkan perbandingan interval.",
+          "Pahami jarak nada, konsonansi, komparator side-by-side, song mnemonics, dan ear training.",
         icon: Waves,
       },
       {
@@ -188,9 +188,9 @@ export const CORE_FEATURES: HomeFeatureItem[] = [
     href: "/family",
   },
   {
-    title: "Interval Explorer",
+    title: "Interval Learn",
     description:
-      "Pelajari jarak nada secara visual dengan filter konsonansi, mode enharmonic, dan perbandingan audio langsung.",
+      "Pelajari jarak nada secara visual dengan filter konsonansi, komparator audio side-by-side, song mnemonics, dan ear training.",
     icon: Waves,
     href: "/interval",
   },

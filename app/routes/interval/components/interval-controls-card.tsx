@@ -1,6 +1,7 @@
 import { Search } from "lucide-react";
 import type { SpellMode } from "~/theory-music/music";
-import { ROOT_FILTER_OPTIONS } from "~/shared/constants/music";
+import { CHROMATIC_12_ROOTS } from "~/shared/constants/music";
+import { rootToPc } from "~/theory-music/core";
 import {
   InputGroup,
   InputGroupAddon,
@@ -35,6 +36,8 @@ export function IntervalControlsCard({
   filter,
   onFilterChange,
 }: IntervalControlsCardProps) {
+  const currentPc = rootToPc(root);
+
   return (
     <div className="space-y-3">
       <div>
@@ -48,34 +51,33 @@ export function IntervalControlsCard({
           <InputGroupInput
             value={query}
             onChange={(event) => onQueryChange(event.target.value)}
-            placeholder="Search interval..."
+            placeholder="Search interval name, semitone, or song..."
             className="h-8 text-xs"
           />
         </InputGroup>
       </div>
 
       <div className="space-y-1.5">
-        <p className="text-muted-foreground text-[11px]">Root</p>
-        <RadioGroup
-          value={root}
-          onValueChange={onRootChange}
-          className="grid grid-cols-4 gap-1"
-        >
-          {ROOT_FILTER_OPTIONS.map((note) => (
-            <Label
-              key={`interval-root-${note}`}
-              htmlFor={`interval-root-${note}`}
-              className="flex cursor-pointer items-center gap-1 rounded border border-border/70 px-1.5 py-1 text-[11px]"
-            >
-              <RadioGroupItem
-                id={`interval-root-${note}`}
-                value={note}
-                className="size-3"
-              />
-              {note}
-            </Label>
-          ))}
-        </RadioGroup>
+        <p className="text-muted-foreground text-[11px]">Root Note (12 Pitch Classes)</p>
+        <div className="grid grid-cols-3 gap-1">
+          {CHROMATIC_12_ROOTS.map((item) => {
+            const isSelected = currentPc === item.pc;
+            return (
+              <button
+                type="button"
+                key={`interval-root-${item.pc}`}
+                onClick={() => onRootChange(item.value)}
+                className={`flex items-center justify-center rounded border px-1.5 py-1 text-[11px] font-medium transition-colors ${
+                  isSelected
+                    ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                    : "border-border/70 hover:bg-muted text-foreground/80"
+                }`}
+              >
+                {item.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <div className="space-y-1.5">
