@@ -13,6 +13,7 @@ export default [
       route("family", "routes/family/index.tsx"),
       route("interval", "routes/interval/index.tsx"),
     ]),
+    route("circle-of-fifths", "routes/circle-of-fifths/index.tsx"),
     ...prefix("scale", [
       index("routes/scale/index.tsx"),
       route(":scaleType", "routes/scale/$scaleType.tsx"),

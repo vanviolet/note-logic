@@ -1,5 +1,7 @@
 import * as React from "react";
+import { Link } from "react-router";
 import {
+  ArrowLeft,
   Download,
   FolderOpen,
   Pause,
@@ -125,6 +127,16 @@ export const StudioHeader = React.memo(function StudioHeader({
 
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
+          <Link
+            to="/"
+            className="inline-flex h-7 items-center gap-1.5 rounded-md border border-border/80 bg-background/80 px-2.5 text-xs font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground active:scale-95"
+            title="Kembali ke Beranda"
+            aria-label="Kembali ke Beranda"
+          >
+            <ArrowLeft className="size-3.5 text-muted-foreground" />
+            <span className="font-medium">Beranda</span>
+          </Link>
+
           <Menubar className="h-7 py-0">
             <MenubarMenu>
               <MenubarTrigger className="text-xs">File</MenubarTrigger>

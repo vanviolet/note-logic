@@ -3,6 +3,7 @@ import {
   BookOpen,
   BookText,
   Brain,
+  Compass,
   GraduationCap,
   Guitar,
   Headphones,
@@ -42,6 +43,13 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: "Belajar",
     items: [
+      {
+        title: "Circle of Fifths",
+        href: "/circle-of-fifths",
+        description:
+          "Lingkaran kuint interaktif: key signature, chord progressions, modal interchange, modulasi, dan piano/guitar visualizer.",
+        icon: Compass,
+      },
       {
         title: "Chord Explorer",
         href: "/chord",
@@ -158,6 +166,13 @@ export type HomeFeatureItem = {
 };
 
 export const CORE_FEATURES: HomeFeatureItem[] = [
+  {
+    title: "Circle of Fifths (Lingkaran Kuint)",
+    description:
+      "Kompas interaktif teori musik: visualisasi 12 key, chord progression sequencer realtime, pivot chord modulation finder, dan piano/guitar fretboard visualizer.",
+    icon: Compass,
+    href: "/circle-of-fifths",
+  },
   {
     title: "Chord Explorer",
     description:

@@ -81,7 +81,14 @@ export function useStudioKeyboard(opts: {
         } else if (selectedCell) {
           const id = `n-${Math.random().toString(36).slice(2, 10)}`;
           setNotes((prev) => [
-            ...prev,
+            ...prev.filter(
+              (n) =>
+                !(
+                  n.measure === selectedCell.measure &&
+                  n.beat === selectedCell.beat &&
+                  n.string === selectedCell.string
+                ),
+            ),
             {
               id,
               measure: selectedCell.measure,

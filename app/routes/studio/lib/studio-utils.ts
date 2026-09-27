@@ -218,12 +218,19 @@ export function toAlphaTex(
     const beats: string[] = [];
 
     for (let beat = 0; beat < beatsPerMeasure; beat += 1) {
-      const beatNotes = noteIndex.get(measure * 10000 + beat);
+      const rawBeatNotes = noteIndex.get(measure * 10000 + beat);
 
-      if (!beatNotes || beatNotes.length === 0) {
+      if (!rawBeatNotes || rawBeatNotes.length === 0) {
         beats.push(`r.${restDuration}`);
         continue;
       }
+
+      // De-duplicate notes by string (keep latest note to prevent superimposed notes on same string)
+      const stringMap = new Map<number, StudioNote>();
+      for (const n of rawBeatNotes) {
+        stringMap.set(n.string, n);
+      }
+      const beatNotes = Array.from(stringMap.values());
 
       if (beatNotes.length === 1) {
         beats.push(noteToAlphaTexToken(beatNotes[0]));
@@ -324,11 +331,19 @@ export function toMultiTrackAlphaTex(
     for (let measure = 0; measure < measureCount; measure += 1) {
       const beats: string[] = [];
       for (let beat = 0; beat < beatsPerMeasure; beat += 1) {
-        const beatNotes = noteIndex.get(measure * 10000 + beat);
-        if (!beatNotes || beatNotes.length === 0) {
+        const rawBeatNotes = noteIndex.get(measure * 10000 + beat);
+        if (!rawBeatNotes || rawBeatNotes.length === 0) {
           beats.push(`r.${restDuration}`);
           continue;
         }
+
+        // De-duplicate notes by string (keep latest note)
+        const stringMap = new Map<number, StudioNote>();
+        for (const n of rawBeatNotes) {
+          stringMap.set(n.string, n);
+        }
+        const beatNotes = Array.from(stringMap.values());
+
         if (beatNotes.length === 1) {
           beats.push(noteToAlphaTexToken(beatNotes[0]));
           continue;

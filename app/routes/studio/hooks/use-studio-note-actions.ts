@@ -29,7 +29,14 @@ export function useStudioNoteActions(
       rememberHistory(notesRef.current);
       const id = `n-${Math.random().toString(36).slice(2, 10)}`;
       setNotes((prev) => [
-        ...prev,
+        ...prev.filter(
+          (n) =>
+            !(
+              n.measure === position.measure &&
+              n.beat === position.beat &&
+              n.string === position.string
+            ),
+        ),
         {
           id,
           measure: position.measure,

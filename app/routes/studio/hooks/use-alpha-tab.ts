@@ -100,6 +100,7 @@ export function useAlphaTab({
       try {
         const alphaTab = await import("@coderline/alphatab");
         if (canceled || !hostRef.current) return;
+        hostRef.current.innerHTML = "";
 
         const mainColor = isDarkMode
           ? "rgba(241, 245, 249, 1)"
@@ -251,6 +252,9 @@ export function useAlphaTab({
         apiRef.current?.destroy();
       } catch {
         // noop
+      }
+      if (hostRef.current) {
+        hostRef.current.innerHTML = "";
       }
       attributionObserverRef.current?.disconnect();
       attributionObserverRef.current = null;

@@ -33,8 +33,8 @@ export function HomeHero() {
           </h1>
 
           <p className="mt-5 max-w-xl text-sm leading-relaxed text-muted-foreground md:text-base">
-            NoteLogic menyediakan 7 modul interaktif: dari Chord Explorer,
-            Interval, Harmonic Family, sampai Guitar Tuner, Songbook, dan Tab
+            NoteLogic menyediakan modul interaktif lengkap: Circle of Fifths, Chord Explorer,
+            Interval, Harmonic Family, Scale, Guitar Tuner, Songbook, dan Tab
             Studio — semua dengan audio playback dan visual yang intuitif.
           </p>
 
