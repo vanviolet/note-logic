@@ -88,7 +88,12 @@ const QUALITY_INTERVALS: Record<string, number[]> = {
   m13: [0, 3, 7, 10, 14, 21],
 };
 
+const pitchClassCache = new Map<string, number[]>();
+
 function resolvePitchClasses(chordName: string): number[] {
+  const cached = pitchClassCache.get(chordName);
+  if (cached) return cached;
+
   const match = CHORD_RE.exec(chordName);
   if (!match) return [];
 
@@ -127,7 +132,9 @@ function resolvePitchClasses(chordName: string): number[] {
     }
   }
 
-  return [...new Set(pcs)];
+  const result = [...new Set(pcs)];
+  pitchClassCache.set(chordName, result);
+  return result;
 }
 
 // ── Public component ───────────────────────────────────
@@ -139,6 +146,8 @@ interface PianoChordDiagramProps {
   width?: number;
   /** Number of octaves to show (default: 1) */
   octaves?: number;
+  /** Hide fingering button & dialog */
+  hideFingering?: boolean;
   /** Optional CSS class */
   className?: string;
 }
@@ -147,6 +156,7 @@ export const PianoChordDiagram = memo(function PianoChordDiagram({
   chord,
   width = 120,
   octaves = 1,
+  hideFingering = false,
   className,
 }: PianoChordDiagramProps) {
   const pitchClasses = resolvePitchClasses(chord);
@@ -174,22 +184,31 @@ export const PianoChordDiagram = memo(function PianoChordDiagram({
         octaves={octaves}
         chordName={chord}
       />
-      <div className="mt-1 flex items-center justify-center">
-        <button
-          onClick={() => setFpOpen(true)}
-          className="flex size-5 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
-          aria-label="Lihat fingering piano"
-          title="Piano Fingering"
-        >
-          <PianoFingerTriggerIcon className="size-3.5" />
-        </button>
-      </div>
-      <PianoFingeringDialog
-        open={fpOpen}
-        onOpenChange={setFpOpen}
-        chordName={chord}
-        pitchClasses={pitchClasses}
-      />
+      {!hideFingering && (
+        <div className="mt-1 flex items-center justify-center">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setFpOpen(true);
+            }}
+            className="flex size-5 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
+            aria-label="Lihat fingering piano"
+            title="Piano Fingering"
+          >
+            <PianoFingerTriggerIcon className="size-3.5" />
+          </button>
+        </div>
+      )}
+      {!hideFingering && fpOpen && (
+        <PianoFingeringDialog
+          open={fpOpen}
+          onOpenChange={setFpOpen}
+          chordName={chord}
+          pitchClasses={pitchClasses}
+        />
+      )}
     </div>
   );
 });

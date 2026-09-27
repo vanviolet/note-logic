@@ -20,7 +20,7 @@ const LearnContentWrapper = memo(function LearnContentWrapper() {
   return (
     <div
       className={cn(
-        "transition-[padding-right,padding-bottom] duration-300 ease-out",
+        "transition-[padding-right] duration-200 ease-out",
         isOpen && "lg:pr-[300px]",
       )}
       style={{ paddingBottom: "var(--learn-panel-h, 48px)" }}

@@ -295,7 +295,14 @@ function shiftShape(shape: BaseShape, shift: number): UkuleleVoicing | null {
   };
 }
 
+const generateUkuleleVoicingsCache = new Map<string, UkuleleVoicing[]>();
+const bestUkuleleVoicingCache = new Map<string, UkuleleVoicing | null>();
+const allUkuleleVoicingsCache = new Map<string, UkuleleVoicing[]>();
+
 export function generateUkuleleVoicings(chordName: string): UkuleleVoicing[] {
+  const cached = generateUkuleleVoicingsCache.get(chordName);
+  if (cached) return cached;
+
   const parsed = parseChordName(chordName);
   if (!parsed) return [];
 
@@ -330,6 +337,7 @@ export function generateUkuleleVoicings(chordName: string): UkuleleVoicing[] {
     }
   }
 
+  generateUkuleleVoicingsCache.set(chordName, unique);
   return unique;
 }
 
@@ -485,20 +493,34 @@ const OPEN_OVERRIDES: Record<string, UkuleleVoicing> = {
 export function getBestUkuleleVoicing(
   chordName: string,
 ): UkuleleVoicing | null {
+  if (bestUkuleleVoicingCache.has(chordName)) {
+    return bestUkuleleVoicingCache.get(chordName) ?? null;
+  }
   const override = OPEN_OVERRIDES[chordName];
-  if (override) return override;
+  if (override) {
+    bestUkuleleVoicingCache.set(chordName, override);
+    return override;
+  }
   const voicings = generateUkuleleVoicings(chordName);
-  return voicings[0] ?? null;
+  const result = voicings[0] ?? null;
+  bestUkuleleVoicingCache.set(chordName, result);
+  return result;
 }
 
 export function getAllUkuleleVoicings(chordName: string): UkuleleVoicing[] {
+  const cached = allUkuleleVoicingsCache.get(chordName);
+  if (cached) return cached;
+
   const override = OPEN_OVERRIDES[chordName];
   const generated = generateUkuleleVoicings(chordName);
 
   if (override) {
     const overrideKey = override.frets.join(",");
     const filtered = generated.filter((v) => v.frets.join(",") !== overrideKey);
-    return [override, ...filtered];
+    const result = [override, ...filtered];
+    allUkuleleVoicingsCache.set(chordName, result);
+    return result;
   }
+  allUkuleleVoicingsCache.set(chordName, generated);
   return generated;
 }

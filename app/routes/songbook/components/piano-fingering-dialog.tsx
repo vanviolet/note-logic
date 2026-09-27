@@ -50,7 +50,7 @@ interface PianoFingeringDialogProps {
 
 // ── Main Dialog ────────────────────────────────────────
 
-export const PianoFingeringDialog = memo(function PianoFingeringDialog({
+function PianoFingeringDialogInner({
   open,
   onOpenChange,
   chordName,
@@ -202,6 +202,13 @@ export const PianoFingeringDialog = memo(function PianoFingeringDialog({
       </DialogContent>
     </Dialog>
   );
+}
+
+export const PianoFingeringDialog = memo(function PianoFingeringDialog(
+  props: PianoFingeringDialogProps,
+) {
+  if (!props.open) return null;
+  return <PianoFingeringDialogInner {...props} />;
 });
 
 // ── Keyboard Finger Visual ─────────────────────────────

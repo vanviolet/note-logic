@@ -81,7 +81,7 @@ export const ChordCard = memo(function ChordCard({
               width={110}
               showPositions={false}
             />
-            <PianoChordDiagram chord={chord.name} />
+            <PianoChordDiagram chord={chord.name} hideFingering />
           </div>
           {/* Function hint */}
           {chord.functionHints[0] && (

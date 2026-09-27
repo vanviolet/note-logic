@@ -39,7 +39,7 @@ interface FingerpickingDialogProps {
 
 // ── Main Dialog ────────────────────────────────────────
 
-export const FingerpickingDialog = memo(function FingerpickingDialog({
+function FingerpickingDialogInner({
   open,
   onOpenChange,
   chordName,
@@ -155,6 +155,13 @@ export const FingerpickingDialog = memo(function FingerpickingDialog({
       </DialogContent>
     </Dialog>
   );
+}
+
+export const FingerpickingDialog = memo(function FingerpickingDialog(
+  props: FingerpickingDialogProps,
+) {
+  if (!props.open) return null;
+  return <FingerpickingDialogInner {...props} />;
 });
 
 // ── Finger Assignment Visual ───────────────────────────

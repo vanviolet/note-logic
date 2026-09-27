@@ -453,11 +453,18 @@ function shiftShape(shape: BaseShape, shift: number): ChordVoicing | null {
   };
 }
 
+const generateVoicingsCache = new Map<string, ChordVoicing[]>();
+const bestVoicingCache = new Map<string, ChordVoicing | null>();
+const allVoicingsWithOverrideCache = new Map<string, ChordVoicing[]>();
+
 /**
  * Generate ALL playable voicings for a chord name.
  * Returns an array sorted by fret position (ascending).
  */
 export function generateVoicings(chordName: string): ChordVoicing[] {
+  const cached = generateVoicingsCache.get(chordName);
+  if (cached) return cached;
+
   const parsed = parseChordName(chordName);
   if (!parsed) return [];
 
@@ -501,6 +508,7 @@ export function generateVoicings(chordName: string): ChordVoicing[] {
     }
   }
 
+  generateVoicingsCache.set(chordName, unique);
   return unique;
 }
 
@@ -765,15 +773,26 @@ const OPEN_OVERRIDES: Record<string, ChordVoicing> = {
  * This is used as the "primary" voicing shown by default.
  */
 export function getBestVoicing(chordName: string): ChordVoicing | null {
+  if (bestVoicingCache.has(chordName)) {
+    return bestVoicingCache.get(chordName) ?? null;
+  }
   const override = OPEN_OVERRIDES[chordName];
-  if (override) return override;
-  return getChordVoicing(chordName);
+  if (override) {
+    bestVoicingCache.set(chordName, override);
+    return override;
+  }
+  const result = getChordVoicing(chordName);
+  bestVoicingCache.set(chordName, result);
+  return result;
 }
 
 /**
  * Get all voicings, with the override (if any) as the first entry.
  */
 export function getAllVoicingsWithOverride(chordName: string): ChordVoicing[] {
+  const cached = allVoicingsWithOverrideCache.get(chordName);
+  if (cached) return cached;
+
   const override = OPEN_OVERRIDES[chordName];
   const generated = generateVoicings(chordName);
 
@@ -781,7 +800,10 @@ export function getAllVoicingsWithOverride(chordName: string): ChordVoicing[] {
     // Remove any generated voicing that matches the override
     const overrideKey = override.frets.join(",");
     const filtered = generated.filter((v) => v.frets.join(",") !== overrideKey);
-    return [override, ...filtered];
+    const result = [override, ...filtered];
+    allVoicingsWithOverrideCache.set(chordName, result);
+    return result;
   }
+  allVoicingsWithOverrideCache.set(chordName, generated);
   return generated;
 }

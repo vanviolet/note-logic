@@ -153,7 +153,7 @@ const FretButton = React.memo(function FretButton({
       data-note={noteData.note}
       data-midi={noteData.midi}
       className={cn(
-        "relative flex h-10 items-center justify-center text-xs transition-all duration-100 cursor-pointer group",
+        "relative flex h-10 items-center justify-center text-xs transition-colors duration-75 cursor-pointer group",
         // Fret cell background — wood grain
         isOpen ? "bg-transparent" : "bg-amber-950/3 dark:bg-amber-100/2",
         // Right border = fret wire (except open string area)
