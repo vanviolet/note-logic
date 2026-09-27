@@ -173,7 +173,7 @@ export default function FamilyRoute() {
           <Badge variant="tonic">Tonic: {counts.tonic}</Badge>
           <Badge variant="subdominant">Subdominant: {counts.subdominant}</Badge>
           <Badge variant="dominant">Dominant: {counts.dominant}</Badge>
-          <Badge variant="outline font-bold">Key: {root} {scaleType}</Badge>
+          <Badge variant="outline" className="font-bold">Key: {root} {scaleType}</Badge>
         </div>
       </div>
 

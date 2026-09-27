@@ -121,7 +121,7 @@ export function IntervalComparator({
       </div>
 
       {/* Comparison Grid */}
-      <div className={`grid gap-4 md:grid-cols-${currentSelectedObjects.length}`}>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {currentSelectedObjects.map((item) => {
           const isPlayingThis = playingShort === item.short;
           return (

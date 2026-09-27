@@ -149,7 +149,7 @@ export default function IntervalRoute() {
           <Badge variant="outline">Total: {counts.total}</Badge>
           <Badge variant="outline">Perfect: {counts.perfect}</Badge>
           <Badge variant="outline">Imperfect: {counts.imperfect}</Badge>
-          <Badge variant="outline font-bold">Root Note: {root}</Badge>
+          <Badge variant="outline" className="font-bold">Root Note: {root}</Badge>
         </div>
       </div>
 

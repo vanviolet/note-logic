@@ -186,6 +186,18 @@ class CircleAudioEngine {
   }
 
   /**
+   * Play a sequential note sequence (melodic interval / arpeggio)
+   */
+  public async playNoteSequence(notes: string[], gapSeconds: number = 0.35) {
+    if (this.isMuted || notes.length === 0) return;
+    notes.forEach((note, idx) => {
+      setTimeout(() => {
+        this.playNote(note, 4, 1.2, 0.85);
+      }, idx * gapSeconds * 1000);
+    });
+  }
+
+  /**
    * Play scale ascending with smooth musical timing
    */
   public async playScale(
