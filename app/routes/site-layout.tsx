@@ -4,12 +4,7 @@ import {
   SiteRouteTransitionTopSlider,
   SiteShellHeaderFallback,
 } from "./components/site-shell-fallbacks";
-
-const HomeBackgroundEffects = lazy(() =>
-  import("./home/components/home-background-effects").then((module) => ({
-    default: module.HomeBackgroundEffects,
-  })),
-);
+import { HomeBackgroundEffects } from "./home/components/home-background-effects";
 
 const HomeHeader = lazy(() =>
   import("./home/components/home-header").then((module) => ({
@@ -25,11 +20,7 @@ export default function SiteLayoutRoute() {
 
   return (
     <div className="relative min-h-screen overflow-x-clip bg-background text-foreground">
-      {isHome && (
-        <Suspense fallback={null}>
-          <HomeBackgroundEffects />
-        </Suspense>
-      )}
+      {isHome && <HomeBackgroundEffects />}
 
       <Suspense fallback={<SiteShellHeaderFallback />}>
         <HomeHeader />

@@ -1,5 +1,4 @@
 import type { Route } from "./+types";
-import { HomeFaq } from "./components/home-faq";
 import { HomeFeatureGrid } from "./components/home-feature-grid";
 import { HomeFooter } from "./components/home-footer";
 import { HomeHero } from "./components/home-hero";
@@ -22,7 +21,6 @@ export default function HomeRoute() {
       <HomeHero />
       <HomeFeatureGrid />
       <HomeLearningPaths />
-      <HomeFaq />
       <div className="relative z-10">
         <HomeFooter />
       </div>

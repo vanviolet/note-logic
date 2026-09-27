@@ -1,7 +1,6 @@
 import { ArrowRight, Radio, Sparkles } from "lucide-react";
 import { Link } from "react-router";
 import { HERO_METRICS, NAV_GROUPS } from "../home-data";
-import { NeonBackground } from "~/templates/components/custom/neon";
 import { Badge } from "~/templates/components/ui/badge";
 import { Button } from "~/templates/components/ui/button";
 import {
@@ -11,28 +10,16 @@ import {
   CardHeader,
   CardTitle,
 } from "~/templates/components/ui/card";
-import { useIsDarkMode } from "./home-theme";
 
 export function HomeHero() {
-  const isDarkMode = useIsDarkMode();
-
   return (
     <section
       id="top"
-      className="relative overflow-hidden border-b border-border/50"
+      className="relative overflow-hidden border-b border-border/40 bg-gradient-to-b from-background via-background/95 to-muted/20"
     >
-      {isDarkMode ? (
-        <NeonBackground
-          className="pointer-events-none absolute inset-0 z-0 bg-transparent opacity-80"
-          count={5}
-          intensity={0.8}
-          speed={0.7}
-          colors={["#fc2646", "#ff6b35", "#e11d48", "#fb7185", "#ff3d68"]}
-        />
-      ) : null}
-
-      <div className="pointer-events-none absolute inset-0 z-1 bg-[radial-gradient(circle_at_top,hsl(var(--primary)/0.25),transparent_55%)]" />
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-1 h-32 bg-linear-to-b from-primary/10 to-transparent" />
+      {/* Pure CSS minimalist ambient lighting - zero CPU/GPU overhead */}
+      <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,hsl(var(--primary)/0.15),transparent)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-24 bg-gradient-to-b from-primary/5 to-transparent" />
 
       <div className="relative z-10 grid w-full gap-10 px-4 py-16 md:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:px-10 lg:py-24">
         <div>
@@ -59,7 +46,7 @@ export function HomeHero() {
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline">
-              <a href="#fitur">Lihat Semua Fitur</a>
+              <Link to="/scale">Jelajahi Scale</Link>
             </Button>
           </div>
 

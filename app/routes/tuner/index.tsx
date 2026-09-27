@@ -8,9 +8,6 @@ import {
 } from "~/templates/hooks";
 import { useTheme } from "~/templates/components/theme-provider";
 import { Badge } from "~/templates/components/ui/badge";
-import { NeonBackground } from "~/templates/components/custom/neon";
-import { StarfieldBackground } from "~/templates/components/custom/starfield";
-import { Particles } from "~/templates/components/custom/particle";
 import { FloatingFilterSidebar } from "~/routes/components/floating-filter-sidebar";
 import { useLearnSidebarStore } from "~/shared/stores/learn-sidebar.store";
 import { cn } from "~/templates/lib/utils";
@@ -179,38 +176,10 @@ export default function TunerRoute() {
   };
 
   return (
-    <section className="relative w-full min-h-[calc(100vh-4rem)] overflow-x-clip">
-      {/* ── Full-page background effects ── */}
-      {isDarkMode ? (
-        <>
-          <NeonBackground
-            className="pointer-events-none absolute inset-0 z-0 bg-transparent opacity-55"
-            count={5}
-            intensity={0.75}
-            speed={0.5}
-            colors={["#fc2646", "#ff6b35", "#e11d48", "#fb7185", "#ff3d68"]}
-          />
-          <StarfieldBackground
-            className="pointer-events-none absolute inset-0 z-0 bg-transparent"
-            count={220}
-            speed={0.22}
-            starColor="#fc8096"
-            twinkle
-          />
-          <Particles
-            className="pointer-events-none absolute inset-0 z-0 bg-transparent opacity-28"
-            color="#fc8096"
-            quantity={32}
-            staticity={72}
-            ease={80}
-            size={0.75}
-          />
-        </>
-      ) : null}
-
-      {/* Gradient overlays */}
-      <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(circle_at_top,hsl(var(--primary)/0.20),transparent_55%)]" />
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-32 bg-linear-to-b from-primary/10 to-transparent" />
+    <section className="relative w-full min-h-[calc(100vh-4rem)] overflow-x-clip bg-background">
+      {/* Pure CSS minimalist background */}
+      <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,hsl(var(--primary)/0.12),transparent_70%)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-32 bg-gradient-to-b from-primary/5 to-transparent" />
 
       {/* ── Control Panel sidebar ── */}
       <FloatingFilterSidebar title="Control Panel" toggleLabel="Control Panel">

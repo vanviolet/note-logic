@@ -134,10 +134,7 @@ export const NAV_GROUPS: NavGroup[] = [
 ];
 
 /** In-page anchor links shown as direct items (no dropdown) */
-export const NAV_DIRECT_LINKS: NavDirectLink[] = [
-  { label: "Fitur", href: "/#fitur" },
-  { label: "FAQ", href: "/#faq" },
-];
+export const NAV_DIRECT_LINKS: NavDirectLink[] = [];
 
 /* ------------------------------------------------------------------ */
 /*  Hero                                                              */

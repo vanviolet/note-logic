@@ -36,7 +36,6 @@ import type {
   ScoreSettings,
   StudioNote,
 } from "./types";
-import { NeonBackground } from "~/templates/components/custom/neon";
 
 // ════════════════════════════════════════════════════════
 // Studio Route – thin orchestrator
@@ -536,17 +535,6 @@ export default function StudioRoute() {
   // ══════════════════════════════════════════════════
   // JSX
   // ══════════════════════════════════════════════════
-  const _Neon = React.useMemo(() => {
-    return (
-      <NeonBackground
-        className="pointer-events-none absolute top-0 right-0 inset-0 z-0 bg-transparent opacity-80"
-        count={1}
-        intensity={0.8}
-        speed={0.7}
-        colors={["#8b5cf6", "#7c3aed", "#22d3ee", "#d946ef", "#6366f1"]}
-      />
-    );
-  }, []);
   return (
     <main className="relative flex h-dvh min-h-0 w-full flex-col bg-background ">
       <>
