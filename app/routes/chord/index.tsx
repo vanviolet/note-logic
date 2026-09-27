@@ -50,6 +50,7 @@ import {
   PaginationPrevious,
 } from "~/templates/components/ui/pagination";
 import { AddChordDialog } from "./components/add-chord-dialog";
+import { ChordCard } from "./components/card/card";
 import {
   SITE_URL,
   filterChords,
@@ -58,13 +59,6 @@ import {
   buildPageNumbers,
   buildChordCollectionJsonLd,
 } from "./lib/chord-utils";
-
-// Lazy loaded ChordCard
-const LazyChordCard = lazy(() =>
-  import("./components/card/card").then((m) => ({
-    default: m.ChordCard,
-  })),
-);
 
 // ── Loader (runs on server per request) ────────────────
 
@@ -503,7 +497,7 @@ export default function ChordListRoute({ loaderData }: Route.ComponentProps) {
           : `Menampilkan ${(page - 1) * PAGE_SIZE + 1}–${Math.min(page * PAGE_SIZE, total)} dari ${total} chord`}
       </p>
 
-      {/* ── Card Grid (lazy) ──────────────────────── */}
+      {/* ── Card Grid ──────────────────────── */}
       {pageChords.length > 0 ? (
         <div
           key={filterKey}
@@ -511,9 +505,7 @@ export default function ChordListRoute({ loaderData }: Route.ComponentProps) {
         >
           {pageChords.map((chord) => (
             <div key={chord.id} className="relative">
-              <Suspense fallback={<CardSkeleton />}>
-                <LazyChordCard chord={chord} />
-              </Suspense>
+              <ChordCard chord={chord} />
               {userIdSet.has(chord.id) && <UserChordBadge chordId={chord.id} />}
             </div>
           ))}

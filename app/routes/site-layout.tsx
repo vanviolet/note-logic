@@ -1,16 +1,8 @@
-import { Suspense, lazy } from "react";
+import { Suspense } from "react";
 import { Outlet, useLocation, useNavigation } from "react-router";
-import {
-  SiteRouteTransitionTopSlider,
-  SiteShellHeaderFallback,
-} from "./components/site-shell-fallbacks";
+import { SiteRouteTransitionTopSlider } from "./components/site-shell-fallbacks";
 import { HomeBackgroundEffects } from "./home/components/home-background-effects";
-
-const HomeHeader = lazy(() =>
-  import("./home/components/home-header").then((module) => ({
-    default: module.HomeHeader,
-  })),
-);
+import { HomeHeader } from "./home/components/home-header";
 
 export default function SiteLayoutRoute() {
   const navigation = useNavigation();
@@ -22,9 +14,7 @@ export default function SiteLayoutRoute() {
     <div className="relative min-h-screen overflow-x-clip bg-background text-foreground">
       {isHome && <HomeBackgroundEffects />}
 
-      <Suspense fallback={<SiteShellHeaderFallback />}>
-        <HomeHeader />
-      </Suspense>
+      <HomeHeader />
 
       <main className="relative z-10">
         <Suspense fallback={null}>

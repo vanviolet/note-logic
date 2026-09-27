@@ -11,29 +11,16 @@ import { Badge } from "~/templates/components/ui/badge";
 import { FloatingFilterSidebar } from "~/routes/components/floating-filter-sidebar";
 import { useLearnSidebarStore } from "~/shared/stores/learn-sidebar.store";
 import { cn } from "~/templates/lib/utils";
-import { clamp } from "./lib/tuner-utils";
 import {
-  TunerControlPanelFallback,
-  TunerMeterFallback,
-} from "./components/tuner-fallbacks";
-import {
+  clamp,
   buildStringLabel,
   closestTargetByMidi,
   GUITAR_STRING_TARGETS,
   toFrameCentsAgainstTarget,
 } from "./lib/tuner-utils";
-import { lazyNamed } from "./lib/lazy";
+import { TunerMeter } from "./components/tuner-meter";
+import { TunerControlPanel } from "./components/tuner-control-panel";
 import type { TuningMode } from "./types";
-
-const TunerMeter = lazyNamed(
-  () => import("./components/tuner-meter"),
-  "TunerMeter",
-);
-
-const TunerControlPanel = lazyNamed(
-  () => import("./components/tuner-control-panel"),
-  "TunerControlPanel",
-);
 
 export function meta(_: Route.MetaArgs) {
   return [
@@ -183,19 +170,17 @@ export default function TunerRoute() {
 
       {/* ── Control Panel sidebar ── */}
       <FloatingFilterSidebar title="Control Panel" toggleLabel="Control Panel">
-        <Suspense fallback={<TunerControlPanelFallback />}>
-          <TunerControlPanel
-            mode={mode}
-            onModeChange={setMode}
-            manualTargetId={manualTargetId}
-            onManualTargetIdChange={setManualTargetId}
-            isListening={isListening}
-            isStarting={isStarting}
-            onToggleTuner={handleToggleTuner}
-            onResetMeter={handleResetMeter}
-            error={error}
-          />
-        </Suspense>
+        <TunerControlPanel
+          mode={mode}
+          onModeChange={setMode}
+          manualTargetId={manualTargetId}
+          onManualTargetIdChange={setManualTargetId}
+          isListening={isListening}
+          isStarting={isStarting}
+          onToggleTuner={handleToggleTuner}
+          onResetMeter={handleResetMeter}
+          error={error}
+        />
       </FloatingFilterSidebar>
 
       {/* ── Sidebar-aware wrapper ── */}
@@ -220,23 +205,21 @@ export default function TunerRoute() {
 
         {/* ── Main tuner content ── */}
         <div className="relative z-10 px-4 pb-24 md:px-8 lg:px-10">
-          <Suspense fallback={<TunerMeterFallback />}>
-            <TunerMeter
-              displayCents={displayCents}
-              rawCents={centsAgainstTarget ?? 0}
-              isListening={isListening}
-              isInTune={isInTune}
-              isPerfectTune={isPerfectTune}
-              targetLabel={activeTarget ? buildStringLabel(activeTarget) : "--"}
-              targetMidi={activeTarget?.midi ?? null}
-              detectedLabel={detectedLabel}
-              detectedMidi={pitchFrame?.midi ?? null}
-              frequencyHz={pitchFrame?.smoothedFrequency ?? null}
-              confidence={pitchFrame?.confidence ?? 0}
-              isStarting={isStarting}
-              onToggleTuner={handleToggleTuner}
-            />
-          </Suspense>
+          <TunerMeter
+            displayCents={displayCents}
+            rawCents={centsAgainstTarget ?? 0}
+            isListening={isListening}
+            isInTune={isInTune}
+            isPerfectTune={isPerfectTune}
+            targetLabel={activeTarget ? buildStringLabel(activeTarget) : "--"}
+            targetMidi={activeTarget?.midi ?? null}
+            detectedLabel={detectedLabel}
+            detectedMidi={pitchFrame?.midi ?? null}
+            frequencyHz={pitchFrame?.smoothedFrequency ?? null}
+            confidence={pitchFrame?.confidence ?? 0}
+            isStarting={isStarting}
+            onToggleTuner={handleToggleTuner}
+          />
         </div>
       </div>
 

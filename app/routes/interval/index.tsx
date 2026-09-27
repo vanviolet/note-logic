@@ -17,23 +17,10 @@ import {
 } from "~/templates/components/ui/tabs";
 import { FloatingFilterSidebar } from "~/routes/components/floating-filter-sidebar";
 import { includeByQuery } from "./lib/interval-utils";
-import { lazyNamed } from "~/shared/lib/lazy";
+import { IntervalLearningCard } from "./components/interval-learning-card";
+import { IntervalControlsCard as IntervalControls } from "./components/interval-controls-card";
+import { IntervalItemTable } from "./components/interval-item-table";
 import type { FilterMode } from "./types";
-
-const IntervalLearningCard = lazyNamed(
-  () => import("./components/interval-learning-card"),
-  "IntervalLearningCard",
-);
-
-const IntervalControls = lazyNamed(
-  () => import("./components/interval-controls-card"),
-  "IntervalControlsCard",
-);
-
-const IntervalItemTable = lazyNamed(
-  () => import("./components/interval-item-table"),
-  "IntervalItemTable",
-);
 
 export function meta(_: Route.MetaArgs) {
   return [
@@ -127,30 +114,26 @@ export default function IntervalRoute() {
 
   const intervalCardElements = useMemo(() => {
     return filteredIntervals.map((interval) => (
-      <Suspense
+      <IntervalLearningCard
         key={`interval-learning-card-${interval.short}`}
-        fallback={<IntervalLearningCardFallback />}
-      >
-        <IntervalLearningCard interval={interval} />
-      </Suspense>
+        interval={interval}
+      />
     ));
   }, [filteredIntervals]);
 
   return (
     <section className="w-full space-y-6 px-4 py-8 md:px-6 md:py-10">
       <FloatingFilterSidebar title="Interval Filters">
-        <Suspense fallback={<IntervalControlsFallback />}>
-          <IntervalControls
-            root={root}
-            onRootChange={setRoot}
-            spell={spell}
-            onSpellChange={setSpell}
-            query={query}
-            onQueryChange={setQuery}
-            filter={filter}
-            onFilterChange={setFilter}
-          />
-        </Suspense>
+        <IntervalControls
+          root={root}
+          onRootChange={setRoot}
+          spell={spell}
+          onSpellChange={setSpell}
+          query={query}
+          onQueryChange={setQuery}
+          filter={filter}
+          onFilterChange={setFilter}
+        />
       </FloatingFilterSidebar>
 
       <div className="space-y-3 px-1">
@@ -192,9 +175,7 @@ export default function IntervalRoute() {
           </TabsContent>
 
           <TabsContent value="table" className="mt-4">
-            <Suspense fallback={<IntervalItemTableFallback />}>
-              <IntervalItemTable intervals={filteredIntervals} />
-            </Suspense>
+            <IntervalItemTable intervals={filteredIntervals} />
           </TabsContent>
         </Tabs>
       )}

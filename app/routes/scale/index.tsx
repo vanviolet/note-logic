@@ -31,21 +31,13 @@ import { Music, Search, Sparkles } from "lucide-react";
 import { cn } from "~/templates/lib/utils";
 import { ROOT_FILTER_OPTIONS } from "~/shared/constants/music";
 import { includeByQuery, familyLabel } from "./lib/scale-utils";
-import { lazyNamed } from "~/shared/lib/lazy";
 import { buildPaginationItems } from "~/shared/lib/pagination";
-import { ScaleCardSkeleton } from "./components/scale-fallbacks";
+import { ScaleLearningCard } from "./components/scale-learning-card";
 import type { DifficultyFilter, FamilyFilter } from "./types";
 
 // ── SEO Constants ──────────────────────────────────────
 
 const SITE_URL = "https://notelogic.app";
-
-// ── Lazy Card ──────────────────────────────────────────
-
-const ScaleLearningCard = lazyNamed(
-  () => import("./components/scale-learning-card"),
-  "ScaleLearningCard",
-);
 
 // ── Constants ──────────────────────────────────────────
 
@@ -348,12 +340,10 @@ export default function ScaleExplorerPage() {
       {paginatedScales.length > 0 ? (
         <div key={filterKey} className="grid gap-5 md:grid-cols-2">
           {paginatedScales.map((scale) => (
-            <Suspense
+            <ScaleLearningCard
               key={`${scale.type}-${scale.root}`}
-              fallback={<ScaleCardSkeleton />}
-            >
-              <ScaleLearningCard scale={scale} />
-            </Suspense>
+              scale={scale}
+            />
           ))}
         </div>
       ) : (

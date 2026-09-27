@@ -10,29 +10,11 @@ import {
   TabsTrigger,
 } from "~/templates/components/ui/tabs";
 import { FloatingFilterSidebar } from "~/routes/components/floating-filter-sidebar";
-import {
-  FamilyChordTableFallback,
-  FamilyChordCardFallback,
-  FamilyControlsFallback,
-} from "./components/family-fallbacks";
 import { includeByQuery } from "./lib/family-utils";
-import { lazyNamed } from "~/shared/lib/lazy";
+import { FamilyControlsCard } from "./components/family-controls-card";
+import { FamilyChordCard } from "./components/family-chord-card";
+import { FamilyChordTable } from "./components/family-chord-table";
 import type { CadentialFilter, FamilyFilter } from "./types";
-
-const FamilyControlsCard = lazyNamed(
-  () => import("./components/family-controls-card"),
-  "FamilyControlsCard",
-);
-
-const FamilyChordCard = lazyNamed(
-  () => import("./components/family-chord-card"),
-  "FamilyChordCard",
-);
-
-const FamilyChordTable = lazyNamed(
-  () => import("./components/family-chord-table"),
-  "FamilyChordTable",
-);
 
 export function meta(_: Route.MetaArgs) {
   return [
@@ -148,32 +130,28 @@ export default function FamilyRoute() {
 
   const familyCardElements = useMemo(() => {
     return filteredEntries.map((entry) => (
-      <Suspense
+      <FamilyChordCard
         key={`${entry.scaleType}-${entry.degree}-${entry.chord.name}`}
-        fallback={<FamilyChordCardFallback />}
-      >
-        <FamilyChordCard entry={entry} />
-      </Suspense>
+        entry={entry}
+      />
     ));
   }, [filteredEntries]);
 
   return (
     <section className="w-full space-y-6 px-4 py-8 md:px-6 md:py-10">
       <FloatingFilterSidebar title="Family Filters">
-        <Suspense fallback={<FamilyControlsFallback />}>
-          <FamilyControlsCard
-            scaleType={scaleType}
-            onScaleTypeChange={setScaleType}
-            root={root}
-            onRootChange={setRoot}
-            query={query}
-            onQueryChange={setQuery}
-            familyFilter={familyFilter}
-            onFamilyFilterChange={setFamilyFilter}
-            cadentialFilter={cadentialFilter}
-            onCadentialFilterChange={setCadentialFilter}
-          />
-        </Suspense>
+        <FamilyControlsCard
+          scaleType={scaleType}
+          onScaleTypeChange={setScaleType}
+          root={root}
+          onRootChange={setRoot}
+          query={query}
+          onQueryChange={setQuery}
+          familyFilter={familyFilter}
+          onFamilyFilterChange={setFamilyFilter}
+          cadentialFilter={cadentialFilter}
+          onCadentialFilterChange={setCadentialFilter}
+        />
       </FloatingFilterSidebar>
 
       <div className="space-y-3 px-1">
@@ -215,9 +193,7 @@ export default function FamilyRoute() {
           </TabsContent>
 
           <TabsContent value="table" className="mt-4">
-            <Suspense fallback={<FamilyChordTableFallback />}>
-              <FamilyChordTable entries={filteredEntries} />
-            </Suspense>
+            <FamilyChordTable entries={filteredEntries} />
           </TabsContent>
         </Tabs>
       ) : null}
