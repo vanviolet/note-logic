@@ -9,11 +9,12 @@
 // ════════════════════════════════════════════════════════
 
 import { lazy, Suspense, useMemo } from "react";
-import { Link, useParams, useNavigate } from "react-router";
+import { Link, useParams, useNavigate, useSearchParams } from "react-router";
 import type { Route } from "./+types";
 import { HelpCircle } from "lucide-react";
 import { Button } from "~/templates/components/ui/button";
 import { LESSON_TOPICS } from "./lib/note-data";
+import type { QuizInputMode } from "./types";
 
 const NoteQuiz = lazy(() =>
   import("./components/note-quiz").then((m) => ({ default: m.NoteQuiz })),
@@ -27,14 +28,21 @@ export function meta({ params }: Route.MetaArgs) {
     { title: `NoteLogic | Quiz – ${title}` },
     {
       name: "description",
-      content: `Quiz identifikasi not balok: ${title}. Uji kemampuan membaca not pada paranada.`,
+      content: `Quiz identifikasi not balok: ${title}. Uji kemampuan membaca not pada paranada dengan pilihan ganda, piano keyboard, atau fretboard gitar.`,
     },
   ];
 }
 
 export default function QuizPage() {
   const { topicId } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+
+  const modeParam = searchParams.get("mode") as QuizInputMode | null;
+  const initialMode: QuizInputMode =
+    modeParam === "piano" || modeParam === "fretboard" || modeParam === "choice"
+      ? modeParam
+      : "choice";
 
   const topic = useMemo(
     () => LESSON_TOPICS.find((t) => t.id === topicId),
@@ -69,6 +77,7 @@ export default function QuizPage() {
         <NoteQuiz
           topic={topic}
           questionCount={10}
+          initialMode={initialMode}
           onBack={() => navigate("/sight-reading")}
         />
       </Suspense>

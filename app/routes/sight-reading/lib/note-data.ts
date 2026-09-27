@@ -365,3 +365,375 @@ export const BASS_MNEMONICS = {
     mnemonicId: "Aku Cinta Es Gurih",
   },
 };
+
+export interface NoteExplanation {
+  noteDisplayName: string;
+  clef: ClefType;
+  positionName: string;
+  positionDetail: string;
+  mnemonicTitle: string;
+  mnemonicSentence: string;
+  mnemonicHighlight: string;
+  pianoGuide: string;
+  guitarPositions: string[];
+  fixTips: string[];
+}
+
+const TREBLE_POSITION_MAP: Record<
+  string,
+  {
+    positionName: string;
+    detail: string;
+    mnemonicTitle: string;
+    mnemonicSentence: string;
+    mnemonicHighlight: string;
+    pianoGuide: string;
+    guitarPositions: string[];
+    tips: string[];
+  }
+> = {
+  C4: {
+    positionName: "Garis Bantu ke-1 di Bawah (Middle C)",
+    detail: "Not C4 (Middle C) berada pada garis bantu (ledger line) pertama tepat di bawah paranada Treble Clef.",
+    mnemonicTitle: "Middle C (Pusat Paranada)",
+    mnemonicSentence: "C4 adalah titik acuan tengah antara Treble Clef dan Bass Clef.",
+    mnemonicHighlight: "C4 = Satu garis potong di bawah staff",
+    pianoGuide: "Tuts C tepat di tengah keyboard piano (Middle C / MIDI 60).",
+    guitarPositions: ["Senar 2 Fret 1", "Senar 3 Fret 5", "Senar 4 Fret 10"],
+    tips: [
+      "Ingat: Middle C selalu digambarkan dengan 1 garis kecil melintang melalui kepala not.",
+      "Pada piano, ini adalah C yang berada tepat di tengah piano akustik.",
+    ],
+  },
+  D4: {
+    positionName: "Di Bawah Garis ke-1 (Space below staff)",
+    detail: "Not D4 menempel tepat di bawah garis pertama (paling bawah) paranada Treble Clef tanpa garis potong.",
+    mnemonicTitle: "Not di Bawah Garis 1",
+    mnemonicSentence: "Satu langkah di atas Middle C4 dan menggantung di bawah garis E4.",
+    mnemonicHighlight: "D4 = Menggantung di bawah Garis 1",
+    pianoGuide: "Tuts putih D oktaf 4, tepat di antara 2 tuts hitam pertama di kanan Middle C.",
+    guitarPositions: ["Senar 2 Fret 3", "Senar 3 Fret 7", "Senar 4 Fret 12"],
+    tips: [
+      "Jangan tertukar dengan D3 (open string senar 4) yang berada 1 oktaf lebih rendah.",
+      "D4 menempel di bawah garis 1, satu nada sebelum garis E4.",
+    ],
+  },
+  E4: {
+    positionName: "Garis ke-1 (Garis Paling Bawah)",
+    detail: "Not E4 terletak tepat di atas garis ke-1 (paling bawah) paranada Treble Clef.",
+    mnemonicTitle: "Garis Treble: EGBDF",
+    mnemonicSentence: "Every Good Boy Does Fine (E - G - B - D - F)",
+    mnemonicHighlight: "E = Every (Garis ke-1)",
+    pianoGuide: "Tuts putih E oktaf 4, di sebelah kanan tuts D4.",
+    guitarPositions: ["Senar 1 Fret 0 (Open)", "Senar 2 Fret 5", "Senar 3 Fret 9"],
+    tips: [
+      "Garis 1 adalah huruf pertama dari akronim 'Every Good Boy Does Fine'.",
+      "Pada gitar, E4 adalah senar 1 open string (senar paling tipis).",
+    ],
+  },
+  F4: {
+    positionName: "Spasi ke-1 (Spasi Paling Bawah)",
+    detail: "Not F4 berada di spasi pertama, yaitu ruang antara garis 1 (E4) dan garis 2 (G4).",
+    mnemonicTitle: "Spasi Treble: FACE",
+    mnemonicSentence: "FACE (F - A - C - E)",
+    mnemonicHighlight: "F = Huruf Pertama FACE (Spasi ke-1)",
+    pianoGuide: "Tuts putih F oktaf 4, di sebelah kiri kelompok 3 tuts hitam.",
+    guitarPositions: ["Senar 1 Fret 1", "Senar 2 Fret 6", "Senar 3 Fret 10"],
+    tips: [
+      "Spasi treble membentuk kata 'FACE'. Huruf pertama F berada di spasi paling bawah.",
+    ],
+  },
+  G4: {
+    positionName: "Garis ke-2 (Garis Kunci G)",
+    detail: "Not G4 berada pada garis ke-2. Simbol Treble Clef melingkari garis ini (sehingga disebut G-Clef).",
+    mnemonicTitle: "Garis Treble: EGBDF",
+    mnemonicSentence: "Every Good Boy Does Fine (E - G - B - D - F)",
+    mnemonicHighlight: "G = Good (Garis ke-2)",
+    pianoGuide: "Tuts putih G oktaf 4.",
+    guitarPositions: ["Senar 1 Fret 3", "Senar 2 Fret 8", "Senar 3 Fret 12"],
+    tips: [
+      "Simbol Treble Clef mulai digambar dari pusaran pada garis ke-2 (G4).",
+      "G3 adalah open string senar 3, sedangkan G4 berada pada Senar 1 Fret 3.",
+    ],
+  },
+  A4: {
+    positionName: "Spasi ke-2",
+    detail: "Not A4 berada di spasi ke-2, yaitu ruang antara garis 2 (G4) dan garis 3 (B4).",
+    mnemonicTitle: "Spasi Treble: FACE",
+    mnemonicSentence: "FACE (F - A - C - E)",
+    mnemonicHighlight: "A = Huruf Kedua FACE (Spasi ke-2)",
+    pianoGuide: "Tuts putih A oktaf 4 (Standard Pitch 440 Hz).",
+    guitarPositions: ["Senar 1 Fret 5", "Senar 2 Fret 10"],
+    tips: [
+      "Spasi ke-2 adalah huruf A dari akronim FACE.",
+      "A4 adalah nada patokan standar tuning internasional (440 Hz).",
+    ],
+  },
+  B4: {
+    positionName: "Garis ke-3 (Garis Tengah)",
+    detail: "Not B4 terletak tepat pada garis ke-3 (garis tengah persis dari 5 garis paranada).",
+    mnemonicTitle: "Garis Treble: EGBDF",
+    mnemonicSentence: "Every Good Boy Does Fine (E - G - B - D - F)",
+    mnemonicHighlight: "B = Boy (Garis ke-3 Tengah)",
+    pianoGuide: "Tuts putih B oktaf 4, tuts sebelum C5.",
+    guitarPositions: ["Senar 1 Fret 7", "Senar 2 Fret 12"],
+    tips: [
+      "Garis ke-3 adalah garis tengah. Tangkai not pada garis ini bisa menghadap ke atas maupun ke bawah.",
+    ],
+  },
+  C5: {
+    positionName: "Spasi ke-3",
+    detail: "Not C5 berada di spasi ke-3, ruang antara garis 3 (B4) dan garis 4 (D5).",
+    mnemonicTitle: "Spasi Treble: FACE",
+    mnemonicSentence: "FACE (F - A - C - E)",
+    mnemonicHighlight: "C = Huruf Ketiga FACE (Spasi ke-3)",
+    pianoGuide: "Tuts putih C oktaf 5 (satu oktaf di atas Middle C).",
+    guitarPositions: ["Senar 1 Fret 8"],
+    tips: [
+      "C5 adalah huruf C dari akronim FACE pada spasi ke-3.",
+      "C5 berada 1 oktaf lebih tinggi dari Middle C (C4).",
+    ],
+  },
+  D5: {
+    positionName: "Garis ke-4",
+    detail: "Not D5 terletak tepat pada garis ke-4 dari bawah pada paranada Treble Clef.",
+    mnemonicTitle: "Garis Treble: EGBDF",
+    mnemonicSentence: "Every Good Boy Does Fine (E - G - B - D - F)",
+    mnemonicHighlight: "D = Does (Garis ke-4)",
+    pianoGuide: "Tuts putih D oktaf 5 (di sebelah kanan C5).",
+    guitarPositions: ["Senar 1 Fret 10"],
+    tips: [
+      "Hitung dari garis bawah: 1 (E), 2 (G), 3 (B), 4 (D) -> D5.",
+      "Jangan tertukar dengan D3 (senar 4 open) atau D4 (di bawah garis 1). D5 berada tinggi pada garis ke-4!",
+    ],
+  },
+  E5: {
+    positionName: "Spasi ke-4 (Spasi Paling Atas)",
+    detail: "Not E5 berada di spasi ke-4 (ruang paling atas antara garis 4 dan 5).",
+    mnemonicTitle: "Spasi Treble: FACE",
+    mnemonicSentence: "FACE (F - A - C - E)",
+    mnemonicHighlight: "E = Huruf Terakhir FACE (Spasi ke-4)",
+    pianoGuide: "Tuts putih E oktaf 5.",
+    guitarPositions: ["Senar 1 Fret 12"],
+    tips: [
+      "Spasi ke-4 adalah huruf E terakhir dari akronim FACE.",
+      "Pada gitar, E5 berada tepat di fret 12 senar 1 (oktaf dari open string senar 1).",
+    ],
+  },
+  F5: {
+    positionName: "Garis ke-5 (Garis Paling Atas)",
+    detail: "Not F5 terletak tepat pada garis ke-5 (garis paling atas dari paranada).",
+    mnemonicTitle: "Garis Treble: EGBDF",
+    mnemonicSentence: "Every Good Boy Does Fine (E - G - B - D - F)",
+    mnemonicHighlight: "F = Fine (Garis ke-5 Paling Atas)",
+    pianoGuide: "Tuts putih F oktaf 5.",
+    guitarPositions: ["Senar 1 Fret 13"],
+    tips: [
+      "Garis ke-5 adalah huruf terakhir 'Fine' pada akronim EGBDF.",
+    ],
+  },
+  G5: {
+    positionName: "Di Atas Garis ke-5",
+    detail: "Not G5 menempel tepat di atas garis ke-5 (paling atas) tanpa garis bantu potong.",
+    mnemonicTitle: "Not Menempel di Atas Staff",
+    mnemonicSentence: "Satu langkah nada di atas garis ke-5 (F5).",
+    mnemonicHighlight: "G5 = Duduk di atas garis ke-5",
+    pianoGuide: "Tuts putih G oktaf 5.",
+    guitarPositions: ["Senar 1 Fret 15"],
+    tips: ["G5 duduk santai di atas garis paling atas paranada."],
+  },
+  A5: {
+    positionName: "Garis Bantu ke-1 di Atas",
+    detail: "Not A5 terletak pada garis bantu (ledger line) pertama di atas paranada.",
+    mnemonicTitle: "Ledger Line Atas",
+    mnemonicSentence: "Dua langkah di atas garis ke-5 (F5).",
+    mnemonicHighlight: "A5 = 1 garis potong di atas staff",
+    pianoGuide: "Tuts putih A oktaf 5.",
+    guitarPositions: ["Senar 1 Fret 17"],
+    tips: ["A5 adalah not tinggi dengan 1 garis kecil melintang di atas staff."],
+  },
+};
+
+const BASS_POSITION_MAP: Record<
+  string,
+  {
+    positionName: string;
+    detail: string;
+    mnemonicTitle: string;
+    mnemonicSentence: string;
+    mnemonicHighlight: string;
+    pianoGuide: string;
+    guitarPositions: string[];
+    tips: string[];
+  }
+> = {
+  E2: {
+    positionName: "Garis Bantu ke-1 di Bawah (Bass Clef)",
+    detail: "Not E2 berada pada garis bantu pertama di bawah paranada Bass Clef.",
+    mnemonicTitle: "Ledger Line Bawah Bass",
+    mnemonicSentence: "Nada bass rendah, setara dengan open string senar 6 gitar.",
+    mnemonicHighlight: "E2 = 1 garis potong di bawah staff bass",
+    pianoGuide: "Tuts putih E oktaf 2 (nada bass rendah).",
+    guitarPositions: ["Senar 6 Fret 0 (Open)"],
+    tips: ["E2 adalah senar 6 open string pada gitar standar."],
+  },
+  F2: {
+    positionName: "Menempel di Bawah Garis ke-1 (Bass Clef)",
+    detail: "Not F2 menempel di bawah garis pertama paranada Bass Clef.",
+    mnemonicTitle: "Di Bawah Garis 1 Bass",
+    mnemonicSentence: "Satu langkah di bawah garis G2.",
+    mnemonicHighlight: "F2 = Di bawah Garis 1 Bass",
+    pianoGuide: "Tuts putih F oktaf 2.",
+    guitarPositions: ["Senar 6 Fret 1"],
+    tips: ["F2 menempel di bawah garis 1 Bass Clef."],
+  },
+  G2: {
+    positionName: "Garis ke-1 (Garis Paling Bawah Bass Clef)",
+    detail: "Not G2 terletak tepat pada garis ke-1 (paling bawah) paranada Bass Clef.",
+    mnemonicTitle: "Garis Bass: GBDFA",
+    mnemonicSentence: "Good Boys Do Fine Always (G - B - D - F - A)",
+    mnemonicHighlight: "G = Good (Garis ke-1)",
+    pianoGuide: "Tuts putih G oktaf 2.",
+    guitarPositions: ["Senar 6 Fret 3"],
+    tips: ["Garis pertama Bass Clef adalah nada G2 ('Good')."],
+  },
+  A2: {
+    positionName: "Spasi ke-1 (Bass Clef)",
+    detail: "Not A2 berada pada spasi pertama dari bawah pada Bass Clef.",
+    mnemonicTitle: "Spasi Bass: ACEG",
+    mnemonicSentence: "All Cows Eat Grass (A - C - E - G)",
+    mnemonicHighlight: "A = All (Spasi ke-1)",
+    pianoGuide: "Tuts putih A oktaf 2.",
+    guitarPositions: ["Senar 5 Fret 0 (Open)", "Senar 6 Fret 5"],
+    tips: ["Spasi pertama Bass Clef adalah A2 (akronim 'All Cows Eat Grass')."],
+  },
+  B2: {
+    positionName: "Garis ke-2 (Bass Clef)",
+    detail: "Not B2 terletak pada garis ke-2 dari bawah pada Bass Clef.",
+    mnemonicTitle: "Garis Bass: GBDFA",
+    mnemonicSentence: "Good Boys Do Fine Always (G - B - D - F - A)",
+    mnemonicHighlight: "B = Boys (Garis ke-2)",
+    pianoGuide: "Tuts putih B oktaf 2.",
+    guitarPositions: ["Senar 5 Fret 2", "Senar 6 Fret 7"],
+    tips: ["Garis ke-2 adalah huruf B ('Boys')."],
+  },
+  C3: {
+    positionName: "Spasi ke-2 (Bass Clef)",
+    detail: "Not C3 berada pada spasi ke-2 pada Bass Clef.",
+    mnemonicTitle: "Spasi Bass: ACEG",
+    mnemonicSentence: "All Cows Eat Grass (A - C - E - G)",
+    mnemonicHighlight: "C = Cows (Spasi ke-2)",
+    pianoGuide: "Tuts putih C oktaf 3.",
+    guitarPositions: ["Senar 5 Fret 3", "Senar 6 Fret 8"],
+    tips: ["Spasi ke-2 Bass Clef adalah C3 ('Cows')."],
+  },
+  D3: {
+    positionName: "Garis ke-3 (Garis Tengah Bass Clef)",
+    detail: "Not D3 terletak pada garis ke-3 (tengah) pada Bass Clef.",
+    mnemonicTitle: "Garis Bass: GBDFA",
+    mnemonicSentence: "Good Boys Do Fine Always (G - B - D - F - A)",
+    mnemonicHighlight: "D = Do (Garis ke-3)",
+    pianoGuide: "Tuts putih D oktaf 3.",
+    guitarPositions: ["Senar 4 Fret 0 (Open)", "Senar 5 Fret 5", "Senar 6 Fret 10"],
+    tips: [
+      "D3 adalah garis tengah Bass Clef dan open string senar 4 gitar.",
+      "Jangan tertukar dengan D4 (Treble) atau D5 (Garis 4 Treble).",
+    ],
+  },
+  E3: {
+    positionName: "Spasi ke-3 (Bass Clef)",
+    detail: "Not E3 berada pada spasi ke-3 pada Bass Clef.",
+    mnemonicTitle: "Spasi Bass: ACEG",
+    mnemonicSentence: "All Cows Eat Grass (A - C - E - G)",
+    mnemonicHighlight: "E = Eat (Spasi ke-3)",
+    pianoGuide: "Tuts putih E oktaf 3.",
+    guitarPositions: ["Senar 4 Fret 2", "Senar 5 Fret 7", "Senar 6 Fret 12"],
+    tips: ["Spasi ke-3 Bass Clef adalah E3 ('Eat')."],
+  },
+  F3: {
+    positionName: "Garis ke-4 (Garis Kunci F)",
+    detail: "Not F3 terletak pada garis ke-4. Dua titik pada simbol Bass Clef mengapit garis ini (F-Clef).",
+    mnemonicTitle: "Garis Bass: GBDFA",
+    mnemonicSentence: "Good Boys Do Fine Always (G - B - D - F - A)",
+    mnemonicHighlight: "F = Fine (Garis ke-4 / F-Clef)",
+    pianoGuide: "Tuts putih F oktaf 3.",
+    guitarPositions: ["Senar 4 Fret 3", "Senar 5 Fret 8"],
+    tips: ["Dua titik pada Bass Clef menunjukkan bahwa garis ke-4 adalah not F3."],
+  },
+  G3: {
+    positionName: "Spasi ke-4 (Spasi Paling Atas Bass Clef)",
+    detail: "Not G3 berada pada spasi ke-4 pada Bass Clef.",
+    mnemonicTitle: "Spasi Bass: ACEG",
+    mnemonicSentence: "All Cows Eat Grass (A - C - E - G)",
+    mnemonicHighlight: "G = Grass (Spasi ke-4)",
+    pianoGuide: "Tuts putih G oktaf 3.",
+    guitarPositions: ["Senar 3 Fret 0 (Open)", "Senar 4 Fret 5", "Senar 5 Fret 10"],
+    tips: ["G3 adalah spasi paling atas Bass Clef dan open string senar 3 gitar."],
+  },
+  A3: {
+    positionName: "Garis ke-5 (Garis Paling Atas Bass Clef)",
+    detail: "Not A3 terletak pada garis ke-5 (paling atas) Bass Clef.",
+    mnemonicTitle: "Garis Bass: GBDFA",
+    mnemonicSentence: "Good Boys Do Fine Always (G - B - D - F - A)",
+    mnemonicHighlight: "A = Always (Garis ke-5)",
+    pianoGuide: "Tuts putih A oktaf 3.",
+    guitarPositions: ["Senar 3 Fret 2", "Senar 4 Fret 7", "Senar 5 Fret 12"],
+    tips: ["Garis paling atas Bass Clef adalah nada A3 ('Always')."],
+  },
+  B3: {
+    positionName: "Di Atas Garis ke-5 Bass Clef",
+    detail: "Not B3 menempel tepat di atas garis ke-5 Bass Clef.",
+    mnemonicTitle: "Di Atas Staff Bass",
+    mnemonicSentence: "Satu langkah di bawah Middle C (C4).",
+    mnemonicHighlight: "B3 = Duduk di atas garis 5 Bass",
+    pianoGuide: "Tuts putih B oktaf 3 (nada tepat sebelum Middle C).",
+    guitarPositions: ["Senar 2 Fret 0 (Open)", "Senar 3 Fret 4", "Senar 4 Fret 9"],
+    tips: ["B3 adalah nada yang duduk di atas garis paling atas Bass Clef."],
+  },
+  C4: {
+    positionName: "Garis Bantu ke-1 di Atas (Middle C)",
+    detail: "Not C4 (Middle C) berada pada garis bantu pertama di atas paranada Bass Clef.",
+    mnemonicTitle: "Middle C (Pusat Paranada)",
+    mnemonicSentence: "C4 adalah titik temu antara Treble dan Bass Clef.",
+    mnemonicHighlight: "C4 = 1 garis potong di atas staff bass",
+    pianoGuide: "Tuts C tepat di tengah keyboard piano (Middle C / MIDI 60).",
+    guitarPositions: ["Senar 2 Fret 1", "Senar 3 Fret 5", "Senar 4 Fret 10"],
+    tips: [
+      "Middle C digambarkan dengan 1 garis potong di atas staff pada Bass Clef, atau di bawah staff pada Treble Clef.",
+    ],
+  },
+};
+
+export function getNoteExplanation(
+  note: StaffNote,
+  clef: ClefType,
+): NoteExplanation {
+  const map = clef === "bass" ? BASS_POSITION_MAP : TREBLE_POSITION_MAP;
+  const entry = map[note.displayName] || {
+    positionName: `Not ${note.displayName} pada ${clef} clef`,
+    detail: `Not ${note.displayName} memiliki frekuensi ${note.midi} MIDI.`,
+    mnemonicTitle: `${clef === "treble" ? "Treble Clef" : "Bass Clef"}`,
+    mnemonicSentence:
+      clef === "treble"
+        ? "Garis: EGBDF, Spasi: FACE"
+        : "Garis: GBDFA, Spasi: ACEG",
+    mnemonicHighlight: note.displayName,
+    pianoGuide: `Tuts putih/hitam ${note.noteName} pada oktaf ${note.octave}.`,
+    guitarPositions: [],
+    tips: ["Perhatikan posisi garis atau spasi dan tanda kuncinya."],
+  };
+
+  return {
+    noteDisplayName: note.displayName,
+    clef,
+    positionName: entry.positionName,
+    positionDetail: entry.detail,
+    mnemonicTitle: entry.mnemonicTitle,
+    mnemonicSentence: entry.mnemonicSentence,
+    mnemonicHighlight: entry.mnemonicHighlight,
+    pianoGuide: entry.pianoGuide,
+    guitarPositions: entry.guitarPositions,
+    fixTips: entry.tips,
+  };
+}
+

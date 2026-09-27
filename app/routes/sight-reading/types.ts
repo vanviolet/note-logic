@@ -7,6 +7,9 @@ import type { LucideIcon } from "lucide-react";
 /** Clef types for staff rendering */
 export type ClefType = "treble" | "bass";
 
+/** Quiz input answering mode */
+export type QuizInputMode = "choice" | "piano" | "fretboard";
+
 /** Time signature */
 export interface TimeSignature {
   beats: number;

@@ -20,6 +20,9 @@ import {
   Gauge,
   KeyRound,
   Target,
+  Guitar,
+  Sparkles,
+  ListFilter,
 } from "lucide-react";
 import { Badge } from "~/templates/components/ui/badge";
 import { Button } from "~/templates/components/ui/button";
@@ -68,10 +71,10 @@ function HeroSection() {
           Belajar Membaca Not Balok
         </h1>
         <p className="max-w-2xl text-base text-muted-foreground leading-relaxed">
-          Pelajari cara membaca notasi musik standar secara interaktif. Mulai
-          dari mengenal paranada, kunci (clef), accidental, durasi, key
-          signature, circle of fifths, dinamika, hingga artikulasi. Uji
-          kemampuanmu dengan quiz interaktif.
+          Pelajari cara membaca notasi musik standar secara interaktif. Uji
+          kemampuan membaca not balokmu menggunakan <strong>Pilihan Ganda</strong>,{" "}
+          <strong>Piano Keyboard Virtual</strong>, atau{" "}
+          <strong>Fretboard Gitar 6-Senar</strong> dengan feedback audio real-time.
         </p>
       </div>
 
@@ -83,8 +86,20 @@ function HeroSection() {
           </Link>
         </Button>
         <Button variant="outline" asChild>
+          <Link to="/sight-reading/quiz/treble-all?mode=fretboard">
+            <Guitar className="size-4 text-amber-500" />
+            Quiz Fretboard Gitar
+          </Link>
+        </Button>
+        <Button variant="outline" asChild>
+          <Link to="/sight-reading/quiz/treble-all?mode=piano">
+            <Keyboard className="size-4 text-primary" />
+            Quiz Piano Keyboard
+          </Link>
+        </Button>
+        <Button variant="ghost" asChild>
           <Link to="/sight-reading/explorer">
-            <Keyboard className="size-4" />
+            <Sparkles className="size-4" />
             Explorer Interaktif
           </Link>
         </Button>
@@ -93,19 +108,19 @@ function HeroSection() {
       {/* Quick info cards */}
       <div className="grid gap-4 sm:grid-cols-3">
         <InfoCard
-          icon={Music}
-          title="Paranada & Kunci"
-          description="Staff, treble/bass clef, posisi not, ledger lines, dan mnemonic untuk menghafal."
+          icon={Guitar}
+          title="Quiz Fretboard Gitar"
+          description="Tebak not balok dengan mengklik fret & senar pada neck gitar langsung."
         />
         <InfoCard
-          icon={Hash}
-          title="Teori Nada"
-          description="Accidental, key signature, enharmonic, circle of fifths, dan time signature."
+          icon={Keyboard}
+          title="Quiz Piano Keyboard"
+          description="Tekan tuts piano virtual untuk menjawab not balok dengan audio piano akustik."
         />
         <InfoCard
-          icon={Hand}
-          title="Ekspresi & Artikulasi"
-          description="Dinamika (pp–ff), staccato, legato, fermata, tanda tempo, dan crescendo."
+          icon={ListFilter}
+          title="Pilihan Ganda Standar"
+          description="Identifikasi cepat not balok untuk melatih kecepatan membaca paranada."
         />
       </div>
     </section>
@@ -280,60 +295,100 @@ const DIFFICULTY_LABELS: Record<Difficulty, string> = {
 function QuizSection() {
   return (
     <section className="space-y-4">
-      <div className="flex items-center gap-2 mb-1">
-        <Target className="size-5 text-primary" />
-        <h2 className="text-xl font-semibold">Quiz Identifikasi Not</h2>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-1">
+        <div>
+          <div className="flex items-center gap-2">
+            <Target className="size-5 text-primary" />
+            <h2 className="text-xl font-semibold">Quiz Identifikasi Not Balok</h2>
+          </div>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Pilih topik dan mode input: Pilihan Ganda, Piano Keyboard, atau Fretboard Gitar.
+          </p>
+        </div>
       </div>
-      <p className="text-sm text-muted-foreground">
-        Pilih topik dan uji kemampuan membaca not balokmu. Setiap quiz berisi 10
-        soal.
-      </p>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {LESSON_TOPICS.map((topic) => (
-          <Link
+          <div
             key={topic.id}
-            to={`/sight-reading/quiz/${topic.id}`}
             className={cn(
-              "group rounded-xl border border-border bg-card p-5 text-left transition-all",
-              "hover:border-primary hover:shadow-md hover:-translate-y-0.5",
+              "group rounded-xl border border-border bg-card p-5 text-left transition-all flex flex-col justify-between",
+              "hover:border-primary/50 hover:shadow-md",
             )}
           >
-            <div className="flex items-start justify-between mb-3">
-              <topic.icon className="size-6 text-primary" />
-              <Badge
-                variant="outline"
-                className={cn(
-                  "text-[10px] font-semibold",
-                  DIFFICULTY_COLORS[topic.difficulty],
-                )}
-              >
-                {DIFFICULTY_LABELS[topic.difficulty]}
-              </Badge>
-            </div>
-            <h3 className="font-semibold mb-1 group-hover:text-primary transition-colors">
-              {topic.title}
-            </h3>
-            <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
-              {topic.description}
-            </p>
-            <div className="mt-3 flex items-center gap-1.5 flex-wrap">
-              {topic.noteRange.slice(0, 6).map((k) => (
+            <div>
+              <div className="flex items-start justify-between mb-3">
+                <topic.icon className="size-6 text-primary" />
                 <Badge
-                  key={k}
-                  variant="secondary"
-                  className="text-[10px] font-mono px-1.5 py-0"
+                  variant="outline"
+                  className={cn(
+                    "text-[10px] font-semibold",
+                    DIFFICULTY_COLORS[topic.difficulty],
+                  )}
                 >
-                  {k.replace("/", "")}
+                  {DIFFICULTY_LABELS[topic.difficulty]}
                 </Badge>
-              ))}
-              {topic.noteRange.length > 6 && (
-                <span className="text-[10px] text-muted-foreground">
-                  +{topic.noteRange.length - 6} lagi
-                </span>
-              )}
+              </div>
+              <h3 className="font-semibold mb-1 group-hover:text-primary transition-colors">
+                {topic.title}
+              </h3>
+              <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                {topic.description}
+              </p>
+              <div className="mt-3 flex items-center gap-1.5 flex-wrap">
+                {topic.noteRange.slice(0, 6).map((k) => (
+                  <Badge
+                    key={k}
+                    variant="secondary"
+                    className="text-[10px] font-mono px-1.5 py-0"
+                  >
+                    {k.replace("/", "")}
+                  </Badge>
+                ))}
+                {topic.noteRange.length > 6 && (
+                  <span className="text-[10px] text-muted-foreground">
+                    +{topic.noteRange.length - 6} lagi
+                  </span>
+                )}
+              </div>
             </div>
-          </Link>
+
+            {/* Direct Mode Launchers */}
+            <div className="mt-4 pt-3 border-t flex items-center gap-1.5 flex-wrap">
+              <Button
+                asChild
+                size="sm"
+                variant="outline"
+                className="text-[11px] h-7 px-2 hover:border-amber-500 hover:text-amber-600"
+              >
+                <Link to={`/sight-reading/quiz/${topic.id}?mode=fretboard`}>
+                  <Guitar className="size-3 text-amber-500 mr-1" />
+                  Gitar
+                </Link>
+              </Button>
+              <Button
+                asChild
+                size="sm"
+                variant="outline"
+                className="text-[11px] h-7 px-2 hover:border-primary hover:text-primary"
+              >
+                <Link to={`/sight-reading/quiz/${topic.id}?mode=piano`}>
+                  <Keyboard className="size-3 text-primary mr-1" />
+                  Piano
+                </Link>
+              </Button>
+              <Button
+                asChild
+                size="sm"
+                variant="secondary"
+                className="text-[11px] h-7 px-2 ml-auto"
+              >
+                <Link to={`/sight-reading/quiz/${topic.id}?mode=choice`}>
+                  Mulai Quiz →
+                </Link>
+              </Button>
+            </div>
+          </div>
         ))}
       </div>
     </section>
