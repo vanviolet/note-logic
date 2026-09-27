@@ -12,7 +12,8 @@ import {
   RadioGroupItem,
 } from "~/templates/components/ui/radio-group";
 import type { CadentialFilter, FamilyFilter } from "../types";
-import { ROOT_FILTER_OPTIONS } from "~/shared/constants/music";
+import { CHROMATIC_12_ROOTS } from "~/shared/constants/music";
+import { rootToPc } from "~/theory-music/core";
 
 interface FamilyControlsCardProps {
   scaleType: ScaleType;
@@ -48,7 +49,7 @@ export function FamilyControlsCard({
   cadentialFilter,
   onCadentialFilterChange,
 }: FamilyControlsCardProps) {
-  const roots = ROOT_FILTER_OPTIONS;
+  const currentPc = rootToPc(root);
 
   const familyOptions: Array<{ value: FamilyFilter; label: string }> = [
     { value: "all", label: "All Family" },
@@ -105,27 +106,28 @@ export function FamilyControlsCard({
         </div>
 
         <div className="space-y-2">
-          <p className="text-muted-foreground text-[11px]">Root</p>
-          <RadioGroup
-            value={root}
-            onValueChange={onRootChange}
-            className="grid grid-cols-5 gap-1"
-          >
-            {roots.map((item) => (
-              <Label
-                key={`family-root-${item}`}
-                htmlFor={`family-root-${item}`}
-                className="flex cursor-pointer items-center gap-1 rounded border border-border/70 px-1.5 py-1 text-[11px]"
-              >
-                <RadioGroupItem
-                  id={`family-root-${item}`}
-                  value={item}
-                  className="size-3"
-                />
-                {item}
-              </Label>
-            ))}
-          </RadioGroup>
+          <div className="flex items-center justify-between">
+            <p className="text-muted-foreground text-[11px]">Root Note (12 Pitch Classes)</p>
+          </div>
+          <div className="grid grid-cols-3 gap-1">
+            {CHROMATIC_12_ROOTS.map((item) => {
+              const isSelected = currentPc === item.pc;
+              return (
+                <button
+                  type="button"
+                  key={`family-root-${item.pc}`}
+                  onClick={() => onRootChange(item.value)}
+                  className={`flex items-center justify-center rounded border px-1.5 py-1 text-[11px] font-medium transition-colors ${
+                    isSelected
+                      ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                      : "border-border/70 hover:bg-muted text-foreground/80"
+                  }`}
+                >
+                  {item.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         <div className="space-y-2">

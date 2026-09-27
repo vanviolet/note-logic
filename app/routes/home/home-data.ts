@@ -58,10 +58,10 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: Music2,
       },
       {
-        title: "Family Explorer",
+        title: "Family Learn",
         href: "/family",
         description:
-          "Pelajari harmonic family: tonic, subdominant, dominant di setiap key.",
+          "Pelajari fungsi harmoni, gubah progresi, dan kulik nada dasar lagu di setiap key.",
         icon: Library,
       },
       {
@@ -273,7 +273,7 @@ export const LEARNING_PATHS: LearningPathItem[] = [
     description:
       "Dalami chord progression, family chord, dan voicing. Mulai aransemen lagu sendiri.",
     highlights: [
-      "Family Explorer: tonic, subdominant, dominant",
+      "Family Learn: tonic, subdominant, dominant & pengulik lagu",
       "Chord Explorer: extension & altered chord",
       "Songbook: analisis chord sheet lagu populer",
       "Fretboard: visualisasi chord position",

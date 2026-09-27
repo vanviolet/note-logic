@@ -15,11 +15,13 @@ export {
   type NoteNameSharp,
   type NoteNameFlat,
   type RootFilterOption,
+  type ChromaticRootOption,
   // Constants
   PITCH_CLASSES,
   NOTES_SHARP,
   NOTES_FLAT,
   ALL_NOTE_OPTIONS,
+  CHROMATIC_12_ROOTS,
   ROOT_FILTER_OPTIONS,
   ROOT_SHARP_OPTIONS,
   ROOT_FLAT_OPTIONS,

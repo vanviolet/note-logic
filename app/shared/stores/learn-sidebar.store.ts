@@ -17,7 +17,7 @@ interface LearnSidebarState {
  *   const isOpen = useLearnSidebarStore(s => s.isOpen);
  */
 export const useLearnSidebarStore = create<LearnSidebarState>((set) => ({
-  isOpen: true,
+  isOpen: false,
   toggle: () => set((s) => ({ isOpen: !s.isOpen })),
   setOpen: (open) => set({ isOpen: open }),
 }));

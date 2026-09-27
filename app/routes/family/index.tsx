@@ -14,15 +14,20 @@ import { includeByQuery } from "./lib/family-utils";
 import { FamilyControlsCard } from "./components/family-controls-card";
 import { FamilyChordCard } from "./components/family-chord-card";
 import { FamilyChordTable } from "./components/family-chord-table";
+import { FamilyHarmonicMap } from "./components/family-harmonic-map";
+import { FamilyProgressionPlayground } from "./components/family-progression-playground";
+import { FamilySongKeyFinder } from "./components/family-song-key-finder";
+import { FamilyHarmonicQuiz } from "./components/family-harmonic-quiz";
 import type { CadentialFilter, FamilyFilter } from "./types";
+import { Sparkles, Music2, Search, Brain, LayoutGrid, Table } from "lucide-react";
 
 export function meta(_: Route.MetaArgs) {
   return [
-    { title: "NoteLogic | Harmonic Family Explorer" },
+    { title: "NoteLogic | Family Learn" },
     {
       name: "description",
       content:
-        "Explore harmonic family roles (Tonic, Subdominant, Dominant) in major/minor keys with progression and cadential context.",
+        "Pelajari harmoni, fungsi chord family (Tonic, Subdominant, Dominant), gubah progresi, dan kulik kunci lagu secara interaktif.",
     },
   ];
 }
@@ -36,7 +41,7 @@ export default function FamilyRoute() {
   const familyFilter = (searchParams.get("family") ?? "all") as FamilyFilter;
   const cadentialFilter = (searchParams.get("cadential") ??
     "all") as CadentialFilter;
-  const view = (searchParams.get("view") ?? "cards") as "cards" | "table";
+  const activeTab = searchParams.get("tab") ?? "map";
 
   const setScaleType = (v: ScaleType) =>
     setSearchParams((prev) => {
@@ -79,11 +84,11 @@ export default function FamilyRoute() {
       return next;
     });
 
-  const setView = (v: "cards" | "table") =>
+  const setActiveTab = (v: string) =>
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
-      if (v !== "cards") next.set("view", v);
-      else next.delete("view");
+      if (v !== "map") next.set("tab", v);
+      else next.delete("tab");
       return next;
     });
 
@@ -139,7 +144,7 @@ export default function FamilyRoute() {
 
   return (
     <section className="w-full space-y-6 px-4 py-8 md:px-6 md:py-10">
-      <FloatingFilterSidebar title="Family Filters">
+      <FloatingFilterSidebar title="Filter Family Learn">
         <FamilyControlsCard
           scaleType={scaleType}
           onScaleTypeChange={setScaleType}
@@ -154,49 +159,92 @@ export default function FamilyRoute() {
         />
       </FloatingFilterSidebar>
 
+      {/* Title & Header */}
       <div className="space-y-3 px-1">
         <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-3xl font-bold tracking-tight">Family Explorer</h1>
-          <Badge variant="secondary">Harmonic Function</Badge>
+          <h1 className="text-3xl font-bold tracking-tight">Family Learn</h1>
+          <Badge variant="secondary">Interaktif Harmoni & Mengulik</Badge>
         </div>
-        <p className="text-muted-foreground text-sm">
-          Pelajari fungsi harmonic family (Tonic, Subdominant, Dominant) di key
-          mayor/minor, lengkap dengan resolution dan pola progression umum.
+        <p className="text-muted-foreground text-sm max-w-3xl leading-relaxed">
+          Pelajari fungsi harmonic family (Tonic, Subdominant, Dominant) di key {root} {scaleType === "major" ? "Mayor" : "Minor"}. Rangkai progresi lagu, cari nada dasar saat mengulik lagu, dan latih pendengaranmu.
         </p>
         <div className="text-muted-foreground flex flex-wrap gap-2 text-xs">
           <Badge variant="outline">Total: {counts.total}</Badge>
           <Badge variant="tonic">Tonic: {counts.tonic}</Badge>
           <Badge variant="subdominant">Subdominant: {counts.subdominant}</Badge>
           <Badge variant="dominant">Dominant: {counts.dominant}</Badge>
-          <Badge variant="outline">Showing: {counts.showing}</Badge>
+          <Badge variant="outline font-bold">Key: {root} {scaleType}</Badge>
         </div>
       </div>
 
-      {filteredEntries.length === 0 ? (
-        <div className="text-muted-foreground py-8 text-center text-sm">
-          Tidak ada chord family untuk filter saat ini.
-        </div>
-      ) : null}
+      {/* Main Interactive Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList className="grid h-auto w-full grid-cols-2 sm:grid-cols-5 gap-1 p-1">
+          <TabsTrigger value="map" className="gap-1.5 text-xs py-2">
+            <Sparkles className="size-3.5 text-primary" />
+            <span>Peta Harmoni</span>
+          </TabsTrigger>
+          <TabsTrigger value="playground" className="gap-1.5 text-xs py-2">
+            <Music2 className="size-3.5 text-emerald-500" />
+            <span>Kulik Progresi</span>
+          </TabsTrigger>
+          <TabsTrigger value="keyfinder" className="gap-1.5 text-xs py-2">
+            <Search className="size-3.5 text-cyan-500" />
+            <span>Pengulik Lagu</span>
+          </TabsTrigger>
+          <TabsTrigger value="cards" className="gap-1.5 text-xs py-2">
+            <LayoutGrid className="size-3.5" />
+            <span>Daftar Cards</span>
+          </TabsTrigger>
+          <TabsTrigger value="quiz" className="gap-1.5 text-xs py-2">
+            <Brain className="size-3.5 text-amber-500" />
+            <span>Kuis & Ear Test</span>
+          </TabsTrigger>
+        </TabsList>
 
-      {filteredEntries.length > 0 ? (
-        <Tabs
-          value={view}
-          onValueChange={(value) => setView(value as "cards" | "table")}
-        >
-          <TabsList className="grid h-auto w-full grid-cols-2 gap-1 p-1 md:w-[320px]">
-            <TabsTrigger value="cards">Cards View</TabsTrigger>
-            <TabsTrigger value="table">Table View</TabsTrigger>
-          </TabsList>
+        {/* Tab 1: Peta Harmoni */}
+        <TabsContent value="map" className="mt-2">
+          <FamilyHarmonicMap
+            entries={familyEntries}
+            root={root}
+            scaleType={scaleType}
+          />
+        </TabsContent>
 
-          <TabsContent value="cards" className="mt-4">
+        {/* Tab 2: Kulik Progresi Scratchpad */}
+        <TabsContent value="playground" className="mt-2">
+          <FamilyProgressionPlayground
+            entries={familyEntries}
+            root={root}
+            scaleType={scaleType}
+          />
+        </TabsContent>
+
+        {/* Tab 3: Pengulik Lagu (Key Finder) */}
+        <TabsContent value="keyfinder" className="mt-2">
+          <FamilySongKeyFinder />
+        </TabsContent>
+
+        {/* Tab 4: Cards View & Table */}
+        <TabsContent value="cards" className="mt-2 space-y-4">
+          {filteredEntries.length === 0 ? (
+            <div className="text-muted-foreground py-8 text-center text-sm">
+              Tidak ada chord family untuk filter saat ini.
+            </div>
+          ) : (
             <div className="grid gap-4">{familyCardElements}</div>
-          </TabsContent>
+          )}
+        </TabsContent>
 
-          <TabsContent value="table" className="mt-4">
-            <FamilyChordTable entries={filteredEntries} />
-          </TabsContent>
-        </Tabs>
-      ) : null}
+        {/* Tab 5: Kuis & Ear Test */}
+        <TabsContent value="quiz" className="mt-2">
+          <FamilyHarmonicQuiz
+            entries={familyEntries}
+            root={root}
+            scaleType={scaleType}
+          />
+        </TabsContent>
+      </Tabs>
     </section>
   );
 }

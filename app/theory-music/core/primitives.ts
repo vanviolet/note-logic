@@ -106,26 +106,43 @@ export const ALL_NOTE_OPTIONS: readonly string[] = [
   "B#",
 ];
 
-/** Root options with both sharps and flats */
+/** Clean 12 chromatic pitch classes for root selection, avoiding enharmonic duplicate radio buttons */
+export interface ChromaticRootOption {
+  pc: number;
+  value: string;
+  label: string;
+  altValue?: string;
+}
+
+export const CHROMATIC_12_ROOTS: readonly ChromaticRootOption[] = [
+  { pc: 0, value: "C", label: "C" },
+  { pc: 1, value: "C#", altValue: "Db", label: "C#/D♭" },
+  { pc: 2, value: "D", label: "D" },
+  { pc: 3, value: "Eb", altValue: "D#", label: "D#/E♭" },
+  { pc: 4, value: "E", label: "E" },
+  { pc: 5, value: "F", label: "F" },
+  { pc: 6, value: "F#", altValue: "Gb", label: "F#/G♭" },
+  { pc: 7, value: "G", label: "G" },
+  { pc: 8, value: "Ab", altValue: "G#", label: "G#/A♭" },
+  { pc: 9, value: "A", label: "A" },
+  { pc: 10, value: "Bb", altValue: "A#", label: "A#/B♭" },
+  { pc: 11, value: "B", label: "B" },
+] as const;
+
+/** 12 canonical root filter options (one per chromatic pitch class) */
 export const ROOT_FILTER_OPTIONS = [
   "C",
   "C#",
-  "Db",
   "D",
-  "D#",
   "Eb",
   "E",
   "F",
   "F#",
-  "Gb",
   "G",
-  "G#",
   "Ab",
   "A",
-  "A#",
   "Bb",
   "B",
-  "Cb",
 ] as const;
 export type RootFilterOption = (typeof ROOT_FILTER_OPTIONS)[number];
 

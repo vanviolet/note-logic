@@ -44,22 +44,6 @@ const LearnContentWrapper = memo(function LearnContentWrapper() {
  * so toggling the sidebar never causes card re-renders.
  */
 export default function LearnLayout() {
-  const setOpen = useLearnSidebarStore((s) => s.setOpen);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const mediaQuery = window.matchMedia("(min-width: 1024px)");
-    const syncSidebarByViewport = () => setOpen(mediaQuery.matches);
-
-    syncSidebarByViewport();
-    mediaQuery.addEventListener("change", syncSidebarByViewport);
-
-    return () => {
-      mediaQuery.removeEventListener("change", syncSidebarByViewport);
-    };
-  }, [setOpen]);
-
   return (
     <>
       <LearnContentWrapper />
