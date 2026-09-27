@@ -25,13 +25,10 @@ export default function SiteLayoutRoute() {
 
   return (
     <div className="relative min-h-screen overflow-x-clip bg-background text-foreground">
-      <Suspense fallback={null}>
-        <HomeBackgroundEffects />
-      </Suspense>
-
-      {/* Backdrop blur overlay for non-home pages */}
-      {!isHome && (
-        <div className="pointer-events-none fixed  inset-0 z-1 backdrop-blur-2xl bg-background/40" />
+      {isHome && (
+        <Suspense fallback={null}>
+          <HomeBackgroundEffects />
+        </Suspense>
       )}
 
       <Suspense fallback={<SiteShellHeaderFallback />}>

@@ -1,0 +1,8 @@
+{
+  "name": "Note Logic",
+  "description": "Interactive Music Theory, Guitar Studio, Scales, Chords, Tuner & Songbook",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

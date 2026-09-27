@@ -11,18 +11,18 @@ export function HomeBackgroundEffects() {
       <>
         <StarfieldBackground
           className="pointer-events-none z-0"
-          count={320}
-          speed={0.3}
+          count={90}
+          speed={0.25}
           starColor="#fc8096"
           twinkle
         />
         <Particles
-          className="pointer-events-none z-1 bg-transparent opacity-35"
+          className="pointer-events-none z-1 bg-transparent opacity-30"
           color="#fc8096"
-          quantity={40}
+          quantity={20}
           staticity={70}
           ease={80}
-          size={0.8}
+          size={0.7}
         />
       </>
     );
@@ -32,19 +32,19 @@ export function HomeBackgroundEffects() {
     <>
       <TopographyBackground
         className="pointer-events-none z-0"
-        lineCount={18}
-        lineColor="rgba(51, 65, 85, 0.12)"
+        lineCount={12}
+        lineColor="rgba(51, 65, 85, 0.10)"
         backgroundColor="#f8fafc"
-        speed={0.6}
+        speed={0.5}
         strokeWidth={1}
       />
       <Particles
-        className="pointer-events-none z-1 bg-transparent opacity-35"
+        className="pointer-events-none z-1 bg-transparent opacity-25"
         color="#475569"
-        quantity={36}
+        quantity={18}
         staticity={78}
         ease={80}
-        size={0.85}
+        size={0.75}
       />
     </>
   );

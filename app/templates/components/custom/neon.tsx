@@ -33,12 +33,14 @@ export function NeonBackground({
   className,
   children,
   colors = ["#00ffff", "#ff00ff", "#8b5cf6", "#00ff88", "#ff6b6b"],
-  count = 6,
+  count = 5,
   intensity = 1,
   speed = 1,
 }: NeonBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const isRunning = useRef(false);
+  const animationRef = useRef<number | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -48,22 +50,20 @@ export function NeonBackground({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const rect = container.getBoundingClientRect();
+    let rect = container.getBoundingClientRect();
     let width = rect.width;
     let height = rect.height;
     canvas.width = width;
     canvas.height = height;
 
-    let animationId: number;
     let tick = 0;
 
-    // Create neon rings with intentional placement - responsive to screen size
     const createRings = (): NeonRing[] => {
       const rings: NeonRing[] = [];
       const cx = width / 2;
       const cy = height / 2;
       const minDim = Math.min(width, height);
-      const scale = minDim / 800; // Base scale factor
+      const scale = minDim / 800;
 
       for (let i = 0; i < count; i++) {
         const angle = (i / count) * Math.PI * 2;
@@ -88,9 +88,8 @@ export function NeonBackground({
 
     let rings = createRings();
 
-    // Resize handler
     const handleResize = () => {
-      const rect = container.getBoundingClientRect();
+      rect = container.getBoundingClientRect();
       width = rect.width;
       height = rect.height;
       canvas.width = width;
@@ -101,7 +100,7 @@ export function NeonBackground({
     const ro = new ResizeObserver(handleResize);
     ro.observe(container);
 
-    // Draw glowing ring
+    // Optimized glowing ring drawing: single soft glow pass + clean core
     const drawRing = (ring: NeonRing, x: number, y: number, scale: number) => {
       const radius = ring.radius * scale;
 
@@ -109,73 +108,90 @@ export function NeonBackground({
       ctx.beginPath();
       ctx.arc(x, y, radius, 0, Math.PI * 2);
       ctx.strokeStyle = ring.color;
-      ctx.lineWidth = ring.lineWidth * 12 * intensity;
-      ctx.globalAlpha = 0.1;
+      ctx.lineWidth = ring.lineWidth * 4 * intensity;
+      ctx.globalAlpha = 0.25;
       ctx.shadowColor = ring.color;
-      ctx.shadowBlur = 40 * intensity;
+      ctx.shadowBlur = 16 * intensity;
       ctx.stroke();
 
-      // Middle glow
+      // Sharp Core
       ctx.beginPath();
       ctx.arc(x, y, radius, 0, Math.PI * 2);
-      ctx.lineWidth = ring.lineWidth * 5 * intensity;
-      ctx.globalAlpha = 0.3;
-      ctx.shadowBlur = 20 * intensity;
-      ctx.stroke();
-
-      // Core
-      ctx.beginPath();
-      ctx.arc(x, y, radius, 0, Math.PI * 2);
-      ctx.lineWidth = ring.lineWidth * 2;
-      ctx.globalAlpha = 0.8;
-      ctx.shadowBlur = 10 * intensity;
-      ctx.stroke();
-
-      // Bright inner core
-      ctx.beginPath();
-      ctx.arc(x, y, radius, 0, Math.PI * 2);
-      ctx.strokeStyle = "#ffffff";
-      ctx.lineWidth = ring.lineWidth * 0.8;
-      ctx.globalAlpha = 0.6;
-      ctx.shadowBlur = 0;
+      ctx.lineWidth = ring.lineWidth * 1.5;
+      ctx.globalAlpha = 0.85;
+      ctx.shadowBlur = 4 * intensity;
       ctx.stroke();
 
       ctx.globalAlpha = 1;
       ctx.shadowBlur = 0;
     };
 
-    // Animation
     const animate = () => {
+      if (!isRunning.current) return;
       tick += speed;
 
-      // Clear with fade
-      ctx.fillStyle = "rgba(8, 8, 12, 0.15)";
+      ctx.fillStyle = "rgba(8, 8, 12, 0.18)";
       ctx.fillRect(0, 0, width, height);
 
       for (const ring of rings) {
-        // Orbital movement
         const orbitAngle = tick * ring.orbitSpeed + ring.orbitOffset;
         const x = ring.x + Math.cos(orbitAngle) * ring.orbitRadius;
         const y = ring.y + Math.sin(orbitAngle) * ring.orbitRadius;
-
-        // Pulse scale
         const pulse =
           0.9 + Math.sin(tick * ring.pulseSpeed + ring.pulseOffset) * 0.1;
 
         drawRing(ring, x, y, pulse);
       }
 
-      animationId = requestAnimationFrame(animate);
+      animationRef.current = requestAnimationFrame(animate);
     };
 
-    // Initial clear
+    const startAnimation = () => {
+      if (!isRunning.current) {
+        isRunning.current = true;
+        animationRef.current = requestAnimationFrame(animate);
+      }
+    };
+
+    const stopAnimation = () => {
+      isRunning.current = false;
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+        animationRef.current = null;
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        stopAnimation();
+      } else {
+        startAnimation();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    // Pause when hero is scrolled out of view!
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry.isIntersecting) {
+          startAnimation();
+        } else {
+          stopAnimation();
+        }
+      },
+      { threshold: 0.05 },
+    );
+    observer.observe(container);
+
     ctx.fillStyle = "#08080c";
     ctx.fillRect(0, 0, width, height);
-
-    animationId = requestAnimationFrame(animate);
+    startAnimation();
 
     return () => {
-      cancelAnimationFrame(animationId);
+      stopAnimation();
+      observer.disconnect();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       ro.disconnect();
     };
   }, [colors, count, intensity, speed]);
@@ -198,16 +214,6 @@ export function NeonBackground({
         }}
       />
 
-      {/* Vignette */}
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(ellipse at center, transparent 0%, transparent 30%, rgba(8,8,12,0.95) 100%)",
-        }}
-      />
-
-      {/* Content layer */}
       {children && (
         <div className="relative z-10 h-full w-full">{children}</div>
       )}

@@ -5,6 +5,7 @@
   "scripts": {
     "build": "react-router build",
     "dev": "react-router dev",
+    "lint": "react-router typegen && tsc --noEmit",
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc",
     "gen:api": "swagger-typescript-api generate -p http://localhost:3000/api/docs-json --module-name-first-tag -o ./app/fetch -n generated.ts ",

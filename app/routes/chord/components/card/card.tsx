@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Link } from "react-router";
 import { Card, CardContent } from "~/templates/components/ui/card";
 import type { ChordEntry } from "~/theory-music/chord";
@@ -13,7 +14,11 @@ import { degreeColor } from "~/theory-music/core";
 import { ChordDiagram } from "~/routes/songbook/components/chord-diagram";
 import { PianoChordDiagram } from "~/routes/songbook/components/piano-chord-diagram";
 
-export function ChordCard({ chord }: { chord: ChordEntry }) {
+export const ChordCard = memo(function ChordCard({
+  chord,
+}: {
+  chord: ChordEntry;
+}) {
   return (
     <Link
       to={`/chord/${chord.id}`}
@@ -88,4 +93,4 @@ export function ChordCard({ chord }: { chord: ChordEntry }) {
       </Card>
     </Link>
   );
-}
+});

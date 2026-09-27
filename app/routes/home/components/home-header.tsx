@@ -13,7 +13,6 @@ import {
 } from "~/templates/components/ui/navigation-menu";
 import { useBoolean } from "~/templates/hooks";
 import { HomeThemeToggle } from "./home-theme-toggle";
-import { Particles } from "~/templates/components/custom/particle";
 
 /* ------------------------------------------------------------------ */
 /*  Sub-component: single link inside NavigationMenuContent           */
@@ -63,20 +62,10 @@ export function HomeHeader() {
         {/* ── Logo ── */}
         <Link to="/" className="inline-flex items-center gap-2 font-semibold">
           <span className="app-icon-aura relative">
-            <Particles
-              className="absolute inset-0 overflow-hidden rounded-full bg-transparent"
-              quantity={18}
-              staticity={20}
-              ease={40}
-              size={0.35}
-              color="#fc2646"
-              vx={0}
-              vy={-0.15}
-            />
             <img
               src="/note-logic-icon-colored.png"
               alt="NoteLogic"
-              className="relative z-10 size-8 object-contain"
+              className="relative z-10 size-8 object-contain transition-transform duration-200 hover:scale-105"
             />
           </span>
           <span>

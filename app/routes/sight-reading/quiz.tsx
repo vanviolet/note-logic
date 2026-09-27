@@ -20,7 +20,8 @@ const NoteQuiz = lazy(() =>
 );
 
 export function meta({ params }: Route.MetaArgs) {
-  const topic = LESSON_TOPICS.find((t) => t.id === params.topicId);
+  const topicId = (params as Record<string, string | undefined>)?.topicId;
+  const topic = LESSON_TOPICS.find((t) => t.id === topicId);
   const title = topic ? topic.title : "Quiz";
   return [
     { title: `NoteLogic | Quiz – ${title}` },
