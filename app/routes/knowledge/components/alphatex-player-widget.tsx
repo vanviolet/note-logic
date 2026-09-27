@@ -65,10 +65,10 @@ export function AlphaTexPlayerWidget({
         if (canceled || !host) return;
 
         const dark = isDarkRef.current;
-        const mainColor = dark ? "rgba(228, 228, 228, 1)" : "rgba(0, 0, 0, 1)";
+        const mainColor = dark ? "rgba(241, 245, 249, 1)" : "rgba(0, 0, 0, 1)";
         const secondaryColor = dark
-          ? "rgba(164, 164, 164, 1)"
-          : "rgba(100, 100, 100, 1)";
+          ? "rgba(148, 163, 184, 1)"
+          : "rgba(50, 50, 50, 1)";
 
         api = new alphaTab.AlphaTabApi(host, {
           core: {
@@ -90,11 +90,11 @@ export function AlphaTexPlayerWidget({
               mainGlyphColor: mainColor,
               secondaryGlyphColor: secondaryColor,
               staffLineColor: dark
-                ? "rgba(100, 100, 100, 1)"
-                : "rgba(200, 200, 200, 1)",
+                ? "rgba(140, 140, 140, 0.9)"
+                : "rgba(0, 0, 0, 0.85)",
               barSeparatorColor: dark
-                ? "rgba(100, 100, 100, 1)"
-                : "rgba(200, 200, 200, 1)",
+                ? "rgba(140, 140, 140, 0.9)"
+                : "rgba(0, 0, 0, 0.85)",
               scoreInfoColor: mainColor,
               barNumberColor: secondaryColor,
             },

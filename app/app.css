@@ -434,43 +434,81 @@
 
 /* Light mode host — clean white surface */
 .at-surface-light {
-  background: rgba(255, 255, 255, 0.97);
+  background: #ffffff !important;
   border-radius: 0.375rem;
-  border: 1px solid rgb(228 232 239);
+  border: 1px solid rgb(226 232 240);
   padding: 0.35rem;
   overflow-x: hidden;
   overflow-y: auto;
   min-height: 280px;
-  color: #000000;
+  color: #000000 !important;
 }
 
-/* Force all SVG elements to dark on light background */
+/* Force all SVG elements to solid black on light background */
+.at-surface-light .at-main svg {
+  color: #000000 !important;
+}
+
 .at-surface-light .at-main svg text,
+.at-surface-light .at-main svg tspan,
+.at-surface-light .at-main svg g text {
+  fill: #000000 !important;
+  stroke: none !important;
+  font-weight: 500;
+}
+
 .at-surface-light .at-main svg [fill="#000000"],
 .at-surface-light .at-main svg [fill="#000"],
-.at-surface-light .at-main svg [fill="rgb(0,0,0)"] {
-  fill: #1a1a1a;
+.at-surface-light .at-main svg [fill="rgb(0,0,0)"],
+.at-surface-light .at-main svg [fill="black"],
+.at-surface-light .at-main svg [fill^="rgba(241"],
+.at-surface-light .at-main svg [fill^="rgba(148"],
+.at-surface-light .at-main svg [fill^="rgba(228"],
+.at-surface-light .at-main svg [fill^="rgba(164"],
+.at-surface-light .at-main svg [fill="#e4e4e4"],
+.at-surface-light .at-main svg [fill="#f1f5f9"],
+.at-surface-light .at-main svg [fill="#94a3b8"] {
+  fill: #000000 !important;
 }
 
 .at-surface-light .at-main svg [stroke="#000000"],
 .at-surface-light .at-main svg [stroke="#000"],
-.at-surface-light .at-main svg [stroke="rgb(0,0,0)"] {
-  stroke: #1a1a1a;
+.at-surface-light .at-main svg [stroke="rgb(0,0,0)"],
+.at-surface-light .at-main svg [stroke="black"],
+.at-surface-light .at-main svg [stroke^="rgba(140"],
+.at-surface-light .at-main svg [stroke^="rgba(100"],
+.at-surface-light .at-main svg [stroke="#e4e4e4"],
+.at-surface-light .at-main svg [stroke="#94a3b8"] {
+  stroke: #000000 !important;
 }
 
-/* Ensure all text and path elements are visible */
-.at-surface-light .at-main svg text {
-  fill: #1a1a1a !important;
+/* Ensure all path elements that are not transparent are solid black */
+.at-surface-light .at-main svg path:not([fill="none"]):not([fill="transparent"]) {
+  fill: #000000 !important;
 }
 
-.at-surface-light .at-main svg path {
-  stroke: #1a1a1a;
+.at-surface-light .at-main svg path[stroke]:not([stroke="none"]):not([stroke="transparent"]) {
+  stroke: #000000 !important;
+}
+
+.at-surface-light .at-main svg line {
+  stroke: #000000 !important;
+}
+
+.at-surface-light .at-main svg polygon {
+  fill: #000000 !important;
+  stroke: #000000 !important;
+}
+
+.at-surface-light .at-main svg polyline {
+  stroke: #000000 !important;
 }
 
 .at-surface-light .at-main svg rect[fill="#ffffff"],
 .at-surface-light .at-main svg rect[fill="#fff"],
-.at-surface-light .at-main svg rect[fill="rgb(255,255,255)"] {
-  fill: rgba(255, 255, 255, 0.97);
+.at-surface-light .at-main svg rect[fill="rgb(255,255,255)"],
+.at-surface-light .at-main svg rect[fill="white"] {
+  fill: #ffffff !important;
 }
 
 .at-surface-light .at-cursor-bar {

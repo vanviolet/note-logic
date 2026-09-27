@@ -4,7 +4,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "~/templates/components/ui/resizable";
-import { useDarkMode } from "~/templates/hooks";
+import { useIsDarkMode } from "~/routes/home/components/home-theme";
 import { StudioHeader } from "./components/studio-header";
 import { StudioMainContent } from "./components/studio-main-content";
 import { StudioSidebarPanel } from "./components/studio-sidebar-panel";
@@ -42,7 +42,7 @@ import type {
 // ════════════════════════════════════════════════════════
 
 export default function StudioRoute() {
-  const { isDarkMode } = useDarkMode({ applyDarkClass: false });
+  const isDarkMode = useIsDarkMode();
 
   // ── Core project state ─────────────────────────────
 

@@ -30,10 +30,10 @@ export function StudioPreviewPanel({
   return (
     <div
       className={cn(
-        "fixed z-30 border-x border-t shadow-lg backdrop-blur-sm",
+        "fixed z-30 border-x border-t shadow-lg backdrop-blur-md",
         isDarkMode
-          ? "border-border/70 bg-card/35"
-          : "border-border/50 bg-white/80",
+          ? "border-border/70 bg-card/90"
+          : "border-border bg-white",
       )}
       style={{
         left: `${left}px`,
