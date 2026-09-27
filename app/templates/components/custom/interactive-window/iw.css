@@ -1,0 +1,66 @@
+.awkd-snap-bg {
+  @apply fixed top-20 bottom-20  bg-primary/50  border-2 border-primary/60 rounded-sm pointer-events-none transition-all duration-100 opacity-0 select-none;
+}
+
+.awkd-dialog {
+  /* Make header fixed within dialog and scroll only the body/content */
+  @apply fixed top-0 rounded-sm bg-background border-2 shadow-lg dark:shadow-black/80 overflow-hidden flex flex-col;
+
+  .fw-inner { @apply flex flex-col flex-1 min-h-0; }
+
+  .minimized-content {
+    @apply bg-primary rounded-sm text-primary-foreground absolute top-0 left-0 right-0 bottom-0  items-center justify-center  cursor-pointer;
+  &.variant-primary { @apply bg-primary text-primary-foreground; }
+  &.variant-success { @apply bg-green-500 text-white; }
+  &.variant-destructive { @apply bg-destructive text-primary-foreground; }
+  &.variant-warning { @apply bg-yellow-500 text-black; }
+  &.variant-secondary { @apply bg-secondary text-secondary-foreground; }
+  /* Ensure clickable even if parent sets different pointer-events */
+  pointer-events: auto;
+  z-index: 50;
+  }
+
+  .header {
+  @apply rounded-sm p-2 md:p-4 flex items-center justify-between sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/70 border-b;
+
+    .large {
+      @apply text-lg font-semibold;
+    }
+    .typo {
+      @apply line-clamp-1;
+    }
+    .muted {
+      @apply text-sm text-muted-foreground/60 font-normal;
+    }
+
+    .left {
+      .title {
+        @apply flex gap-2 items-center;
+      }
+    }
+
+    .right {
+      @apply flex space-x-1;
+    }
+  }
+  .content { /* Scroll region */ @apply flex-1 min-h-0 overflow-auto py-2 md:py-4 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300; }
+}
+
+/* Adjust behavior when minimized */
+.awkd-dialog.is-minimized {
+  overflow: visible; /* allow the small icon to sit anywhere (reposition algorithm) */
+  display: block; /* collapse to intrinsic minimized size */
+  width: 50px !important;
+  height: 50px !important;
+}
+.awkd-dialog.is-minimized .fw-inner { display: none !important; }
+.awkd-dialog.is-minimized .minimized-content { display: flex !important; }
+
+
+.awkd-dialog-active {
+  /* Removed fixed z-index so inline stacking order can elevate active dialog */
+  .header {
+    @apply bg-card;
+  }
+  
+}

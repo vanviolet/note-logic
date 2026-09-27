@@ -1,0 +1,299 @@
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router";
+import type { Route } from "./+types";
+import { generateChordArray } from "~/theory-music/chord";
+import { Badge } from "~/templates/components/ui/badge";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "~/templates/components/ui/pagination";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "~/templates/components/ui/tabs";
+import {
+  ChordItemCardFallback,
+  ChordItemTableFallback,
+  ChordSearchPanelFallback,
+} from "./components/chord-fallbacks";
+import { FloatingFilterSidebar } from "~/routes/components/floating-filter-sidebar";
+import { ROOT_FILTER_OPTIONS } from "~/shared/constants/music";
+import { buildPaginationItems, includeByQuery } from "./lib/chord-utils";
+import { lazyNamed } from "./lib/lazy";
+import type { ComboOption } from "./types";
+
+const ChordItemCard = lazyNamed(
+  () => import("./components/chord-item-card"),
+  "ChordItemCard",
+);
+
+const ChordSearchPanel = lazyNamed(
+  () => import("./components/chord-search-panel"),
+  "ChordSearchPanel",
+);
+
+const ChordItemTable = lazyNamed(
+  () => import("./components/chord-item-table"),
+  "ChordItemTable",
+);
+
+export function meta(_: Route.MetaArgs) {
+  return [
+    { title: "NoteLogic | Chord Explorer" },
+    {
+      name: "description",
+      content:
+        "Search and explore chord formulas with interactive acoustic guitar fretboard audio.",
+    },
+  ];
+}
+
+export default function ChordRoute() {
+  const allChords = useMemo(() => generateChordArray(), []);
+  const pageSize = 4;
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [page, setPage] = useState(1);
+
+  const query = searchParams.get("q") ?? "";
+  const rootFilter = searchParams.get("root") ?? "all";
+  const familyFilter = searchParams.get("family") ?? "all";
+  const qualityFilter = searchParams.get("quality") ?? "all";
+  const view = (searchParams.get("view") ?? "cards") as "cards" | "table";
+
+  const setView = (v: "cards" | "table") =>
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (v !== "cards") next.set("view", v);
+      else next.delete("view");
+      return next;
+    });
+
+  const setQuery = (q: string) =>
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (q) next.set("q", q);
+        else next.delete("q");
+        return next;
+      },
+      { replace: true },
+    );
+
+  const setRootFilter = (v: string) =>
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (v !== "all") next.set("root", v);
+      else next.delete("root");
+      return next;
+    });
+
+  const setFamilyFilter = (v: string) =>
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (v !== "all") next.set("family", v);
+      else next.delete("family");
+      return next;
+    });
+
+  const setQualityFilter = (v: string) =>
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (v !== "all") next.set("quality", v);
+      else next.delete("quality");
+      return next;
+    });
+
+  const rootOptions = useMemo<ComboOption[]>(() => {
+    return [
+      { value: "all", label: "All Roots" },
+      ...ROOT_FILTER_OPTIONS.map((root) => ({ value: root, label: root })),
+    ];
+  }, []);
+
+  const familyOptions = useMemo<ComboOption[]>(() => {
+    const families = Array.from(
+      new Set(allChords.map((chord) => chord.family)),
+    );
+    return [
+      { value: "all", label: "All Families" },
+      ...families.map((family) => ({ value: family, label: family })),
+    ];
+  }, [allChords]);
+
+  const qualityOptions = useMemo<ComboOption[]>(() => {
+    const qualities = Array.from(
+      new Set(allChords.map((chord) => chord.quality)),
+    );
+    return [
+      { value: "all", label: "All Qualities" },
+      ...qualities.map((quality) => ({ value: quality, label: quality })),
+    ];
+  }, [allChords]);
+
+  const filteredChords = useMemo(() => {
+    return allChords.filter((chord) => {
+      if (rootFilter !== "all" && chord.root !== rootFilter) return false;
+      if (familyFilter !== "all" && chord.family !== familyFilter) return false;
+      if (qualityFilter !== "all" && chord.quality !== qualityFilter)
+        return false;
+      if (query.trim().length > 0 && !includeByQuery(chord, query.trim()))
+        return false;
+      return true;
+    });
+  }, [allChords, rootFilter, familyFilter, qualityFilter, query]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [query, rootFilter, familyFilter, qualityFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredChords.length / pageSize));
+  const safePage = Math.min(page, totalPages);
+
+  const paginatedChords = useMemo(() => {
+    const start = (safePage - 1) * pageSize;
+    return filteredChords.slice(start, start + pageSize);
+  }, [filteredChords, safePage]);
+
+  const paginationItems = useMemo(
+    () => buildPaginationItems(safePage, totalPages),
+    [safePage, totalPages],
+  );
+
+  const chordCardElements = useMemo(() => {
+    return paginatedChords.map((chord) => (
+      <Suspense key={chord.name} fallback={<ChordItemCardFallback />}>
+        <ChordItemCard chord={chord} />
+      </Suspense>
+    ));
+  }, [paginatedChords]);
+
+  return (
+    <section className="w-full space-y-6 px-4 py-8 md:px-6 md:py-10">
+      <FloatingFilterSidebar title="Chord Filters">
+        <Suspense fallback={<ChordSearchPanelFallback />}>
+          <ChordSearchPanel
+            query={query}
+            onChangeQuery={setQuery}
+            rootFilter={rootFilter}
+            onRootFilterChange={setRootFilter}
+            familyFilter={familyFilter}
+            onFamilyFilterChange={setFamilyFilter}
+            qualityFilter={qualityFilter}
+            onQualityFilterChange={setQualityFilter}
+            rootOptions={rootOptions}
+            familyOptions={familyOptions}
+            qualityOptions={qualityOptions}
+            totalChords={allChords.length}
+            filteredCount={filteredChords.length}
+          />
+        </Suspense>
+      </FloatingFilterSidebar>
+
+      <div className="space-y-3 px-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <h1 className="text-3xl font-bold tracking-tight">Chord Explorer</h1>
+          <Badge variant="secondary">Acoustic Guitar Audio</Badge>
+        </div>
+        <p className="text-muted-foreground text-sm">
+          Cari chord dengan text search + combobox filters, lalu eksplorasi
+          note-nya di fretboard interaktif.
+        </p>
+        <div className="text-muted-foreground flex flex-wrap gap-2 text-xs">
+          <Badge variant="outline">Total Chords: {allChords.length}</Badge>
+          <Badge variant="outline">Filtered: {filteredChords.length}</Badge>
+        </div>
+      </div>
+
+      {filteredChords.length === 0 ? (
+        <div className="text-muted-foreground py-8 text-center text-sm">
+          Tidak ada chord untuk filter saat ini.
+        </div>
+      ) : (
+        <Tabs
+          value={view}
+          onValueChange={(v) => setView(v as "cards" | "table")}
+        >
+          <TabsList className="grid h-auto w-full grid-cols-2 gap-1 p-1 md:w-60">
+            <TabsTrigger value="cards">Cards View</TabsTrigger>
+            <TabsTrigger value="table">Table View</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="cards" className="mt-4">
+            <div className="grid grid-cols-1 gap-4">{chordCardElements}</div>
+          </TabsContent>
+
+          <TabsContent value="table" className="mt-4">
+            <Suspense fallback={<ChordItemTableFallback />}>
+              <ChordItemTable chords={filteredChords} />
+            </Suspense>
+          </TabsContent>
+        </Tabs>
+      )}
+
+      {filteredChords.length > 0 && view === "cards" ? (
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                href="#"
+                className={
+                  safePage <= 1 ? "pointer-events-none opacity-50" : ""
+                }
+                onClick={(event) => {
+                  event.preventDefault();
+                  setPage((prev) => Math.max(1, prev - 1));
+                }}
+              />
+            </PaginationItem>
+
+            {paginationItems.map((item, index) => {
+              if (item === "ellipsis") {
+                return (
+                  <PaginationItem key={`ellipsis-${index}`}>
+                    <PaginationEllipsis />
+                  </PaginationItem>
+                );
+              }
+
+              return (
+                <PaginationItem key={`page-${item}`}>
+                  <PaginationLink
+                    href="#"
+                    isActive={item === safePage}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      setPage(item);
+                    }}
+                  >
+                    {item}
+                  </PaginationLink>
+                </PaginationItem>
+              );
+            })}
+
+            <PaginationItem>
+              <PaginationNext
+                href="#"
+                className={
+                  safePage >= totalPages ? "pointer-events-none opacity-50" : ""
+                }
+                onClick={(event) => {
+                  event.preventDefault();
+                  setPage((prev) => Math.min(totalPages, prev + 1));
+                }}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      ) : null}
+    </section>
+  );
+}

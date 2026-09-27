@@ -1,0 +1,2560 @@
+import * as React from "react";
+import {
+  type DragEndEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import { arrayMove } from "@dnd-kit/sortable";
+import {
+  ClipboardPaste,
+  Copy,
+  CopyPlus,
+  Eraser,
+  PanelLeft,
+  Trash2,
+} from "lucide-react";
+import { Badge } from "~/templates/components/ui/badge";
+import { Button } from "~/templates/components/ui/button";
+import { Input } from "~/templates/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/templates/components/ui/select";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "~/templates/components/ui/resizable";
+import { useDarkMode } from "~/templates/hooks";
+import { StudioGrid } from "./components/studio-grid";
+import { StudioHeader } from "./components/studio-header";
+import { StudioPreviewPanel } from "./components/studio-preview-panel";
+import { StudioSidebarPanel } from "./components/studio-sidebar-panel";
+import { useAlphaTab } from "./hooks/use-alpha-tab";
+import {
+  buildCellId,
+  createInitialNotes,
+  importScoreToStudio,
+  STRING_TUNING,
+  toPitchClass,
+  toAlphaTex,
+} from "./lib/studio-utils";
+import { buildAllColumnKeys } from "./lib/studio-constants";
+import { getAllStudioProjects, saveStudioProject } from "./lib/studio-db";
+import {
+  parseSidebarNodeKey,
+  type BatchEditDraft,
+  type SidebarGroup,
+  type StudioProjectSnapshot,
+} from "./lib/studio-types";
+import type { CellPosition, NoteDuration, StudioNote } from "./types";
+
+// ════════════════════════════════════════════════════════
+// Studio Route – thin orchestrator
+// ════════════════════════════════════════════════════════
+
+export default function StudioRoute() {
+  const { isDarkMode } = useDarkMode({ applyDarkClass: false });
+
+  // ── Core project state ─────────────────────────────
+
+  const [title, setTitle] = React.useState("Tab Studio Draft");
+  const [measureCount, setMeasureCount] = React.useState(4);
+  const [barNames, setBarNames] = React.useState<string[]>(() =>
+    Array.from({ length: 4 }, (_, i) => `Bar ${i + 1}`),
+  );
+  const [beatsPerMeasure, setBeatsPerMeasure] = React.useState(4);
+  const [timeSignatureNumerator, setTimeSignatureNumerator] = React.useState(4);
+  const [tempo, setTempo] = React.useState(96);
+  const [cellWidth, setCellWidth] = React.useState(56);
+  const [stringTuning, setStringTuning] =
+    React.useState<readonly string[]>(STRING_TUNING);
+  const [defaultDuration, setDefaultDuration] = React.useState<NoteDuration>(4);
+  const [notes, setNotes] = React.useState<StudioNote[]>(createInitialNotes);
+  const [selectedCell, setSelectedCell] = React.useState<CellPosition | null>(
+    null,
+  );
+  const [selectedNoteId, setSelectedNoteId] = React.useState<string | null>(
+    null,
+  );
+
+  // ── Playback state ─────────────────────────────────
+
+  const [isPlaybackRunning, setIsPlaybackRunning] = React.useState(false);
+  const [, setPlayingNoteIds] = React.useState<string[]>([]);
+  const [playheadBeat, setPlayheadBeat] = React.useState(0);
+
+  // ── History state ──────────────────────────────────
+
+  const [canUndo, setCanUndo] = React.useState(false);
+  const [canRedo, setCanRedo] = React.useState(false);
+  const [hasCopiedMeasure, setHasCopiedMeasure] = React.useState(false);
+  const [isImporting, setIsImporting] = React.useState(false);
+
+  // ── Layout state ───────────────────────────────────
+
+  const [showSidebar, setShowSidebar] = React.useState(true);
+  const [showBottomBar, setShowBottomBar] = React.useState(true);
+  const [showPreview, setShowPreview] = React.useState(true);
+
+  // ── Sidebar state ──────────────────────────────────
+
+  const [activeSidebarBar, setActiveSidebarBar] = React.useState(0);
+  const [editingBar, setEditingBar] = React.useState<number | null>(null);
+  const [editingGroupId, setEditingGroupId] = React.useState<string | null>(
+    null,
+  );
+  const [editingGroupName, setEditingGroupName] = React.useState("");
+  const [activeSidebarGroupId, setActiveSidebarGroupId] = React.useState<
+    string | null
+  >(null);
+  const [sidebarHasFocus, setSidebarHasFocus] = React.useState(false);
+  const [selectedSidebarBars, setSelectedSidebarBars] = React.useState<
+    number[]
+  >([0]);
+  const [activeSidebarItemKey, setActiveSidebarItemKey] =
+    React.useState("bar:0");
+  const [selectedSidebarItemKeys, setSelectedSidebarItemKeys] = React.useState<
+    string[]
+  >(["bar:0"]);
+  const [expandedBars, setExpandedBars] = React.useState<number[]>([]);
+  const [collapsedColumns, setCollapsedColumns] = React.useState<string[]>(() =>
+    buildAllColumnKeys(4, 4),
+  );
+  const [draggingColumnKey, setDraggingColumnKey] = React.useState<
+    string | null
+  >(null);
+  const [draggingNoteKey, setDraggingNoteKey] = React.useState<string | null>(
+    null,
+  );
+
+  // ── Batch edit state ───────────────────────────────
+
+  const [batchEditOpen, setBatchEditOpen] = React.useState(false);
+  const [batchEditTargetKeys, setBatchEditTargetKeys] = React.useState<
+    string[]
+  >([]);
+  const [batchEditDraft, setBatchEditDraft] = React.useState<BatchEditDraft>({
+    duration: "keep",
+    dynamic: "keep",
+    palmMute: "keep",
+  });
+
+  // ── Group state ────────────────────────────────────
+
+  const selectionAnchorRef = React.useRef<number>(0);
+  const sidebarSelectionAnchorKeyRef = React.useRef<string>("bar:0");
+  const [barGroups, setBarGroups] = React.useState<SidebarGroup[]>([]);
+
+  // ── Derived scalars ────────────────────────────────
+
+  const totalBeats = measureCount * beatsPerMeasure;
+
+  // ── Refs ───────────────────────────────────────────
+
+  const notesRef = React.useRef(notes);
+  const alphaHostRef = React.useRef<HTMLDivElement | null>(null);
+  const gridContainerRef = React.useRef<HTMLDivElement | null>(null);
+  const historyRef = React.useRef<StudioNote[][]>([]);
+  const redoRef = React.useRef<StudioNote[][]>([]);
+  const isRestoringHistoryRef = React.useRef(false);
+  const copiedMeasureRef = React.useRef<StudioNote[] | null>(null);
+  const importedScoreRef = React.useRef<unknown>(null);
+  const [projectList, setProjectList] = React.useState<StudioProjectSnapshot[]>(
+    [],
+  );
+  const [currentProjectId, setCurrentProjectId] = React.useState<string>(
+    () => `studio-${crypto.randomUUID()}`,
+  );
+  const autosaveReadyRef = React.useRef(false);
+  const renameInputRef = React.useRef<HTMLInputElement | null>(null);
+  const groupRenameInputRef = React.useRef<HTMLInputElement | null>(null);
+  const sidebarRef = React.useRef<HTMLDivElement | null>(null);
+  const sidebarCopyMeasureRef = React.useRef<number | null>(null);
+  const knownColumnKeysRef = React.useRef<Set<string>>(
+    new Set(buildAllColumnKeys(4, 4)),
+  );
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+  );
+
+  // ── Keep notesRef in sync ──────────────────────────
+
+  React.useEffect(() => {
+    notesRef.current = notes;
+  }, [notes]);
+
+  React.useEffect(() => {
+    setCanUndo(historyRef.current.length > 0);
+    setCanRedo(redoRef.current.length > 0);
+  }, [notes]);
+
+  // ── History helpers ────────────────────────────────
+
+  const rememberHistory = React.useCallback((snapshot: StudioNote[]) => {
+    if (isRestoringHistoryRef.current) return;
+    historyRef.current.push(snapshot);
+    if (historyRef.current.length > 200) historyRef.current.shift();
+    redoRef.current = [];
+  }, []);
+
+  // ── AlphaTex memo ──────────────────────────────────
+
+  const alphaTex = React.useMemo(
+    () =>
+      toAlphaTex(
+        notes,
+        tempo,
+        measureCount,
+        beatsPerMeasure,
+        title,
+        stringTuning,
+        timeSignatureNumerator,
+      ),
+    [
+      beatsPerMeasure,
+      measureCount,
+      notes,
+      stringTuning,
+      tempo,
+      timeSignatureNumerator,
+      title,
+    ],
+  );
+
+  // ── AlphaTab hook ──────────────────────────────────
+
+  const {
+    alphaReady,
+    alphaStatus,
+    scoreSource,
+    setAlphaStatus,
+    playPause,
+    stop,
+    seekToBeat,
+    renderImportedScore,
+    useEditorScore,
+  } = useAlphaTab({
+    hostRef: alphaHostRef,
+    gridContainerRef,
+    alphaTex,
+    beatsPerMeasure,
+    notesRef,
+    isDarkMode,
+    onPlayheadBeatChange: setPlayheadBeat,
+    onPlayingNoteIdsChange: setPlayingNoteIds,
+    onPlaybackStateChange: setIsPlaybackRunning,
+  });
+
+  // ── Derived memos ──────────────────────────────────
+
+  const noteByCell = React.useMemo(() => {
+    const map = new Map<string, StudioNote>();
+    for (const note of notes) {
+      map.set(
+        buildCellId({
+          measure: note.measure,
+          beat: note.beat,
+          string: note.string,
+        }),
+        note,
+      );
+    }
+    return map;
+  }, [notes]);
+
+  const selectedNote = React.useMemo(
+    () => notes.find((n) => n.id === selectedNoteId) ?? null,
+    [notes, selectedNoteId],
+  );
+
+  const selectedMeasure = selectedCell?.measure ?? selectedNote?.measure ?? 0;
+
+  // ── Sidebar sync effects ───────────────────────────
+
+  React.useEffect(() => {
+    setActiveSidebarBar((prev) => {
+      const next = Math.min(Math.max(0, selectedMeasure), measureCount - 1);
+      return prev === next ? prev : next;
+    });
+    if (!sidebarHasFocus) {
+      setSelectedSidebarBars((prev) =>
+        prev.includes(selectedMeasure) ? prev : [selectedMeasure],
+      );
+      selectionAnchorRef.current = selectedMeasure;
+    }
+  }, [measureCount, selectedMeasure, sidebarHasFocus]);
+
+  React.useEffect(() => {
+    if (editingBar === null) return;
+    renameInputRef.current?.focus();
+    renameInputRef.current?.select();
+  }, [editingBar]);
+
+  React.useEffect(() => {
+    if (editingGroupId === null) return;
+    groupRenameInputRef.current?.focus();
+    groupRenameInputRef.current?.select();
+  }, [editingGroupId]);
+
+  React.useEffect(() => {
+    const barKeys = selectedSidebarItemKeys.filter((k) => k.startsWith("bar:"));
+    const bars = Array.from(
+      new Set(
+        barKeys.map((k) => Number(k.split(":")[1])).filter(Number.isFinite),
+      ),
+    );
+    if (bars.length > 0) setSelectedSidebarBars(bars);
+  }, [selectedSidebarItemKeys]);
+
+  React.useEffect(() => {
+    setBarGroups((prev) =>
+      prev.map((g) => {
+        const ids = new Set(prev.map((x) => x.id));
+        return {
+          ...g,
+          bars: Array.from(new Set(g.bars)).filter(
+            (b) => b >= 0 && b < measureCount,
+          ),
+          parentGroupId:
+            g.parentGroupId && ids.has(g.parentGroupId)
+              ? g.parentGroupId
+              : null,
+        };
+      }),
+    );
+  }, [measureCount]);
+
+  React.useEffect(() => {
+    setExpandedBars((prev) => prev.filter((m) => m >= 0 && m < measureCount));
+  }, [measureCount]);
+
+  React.useEffect(() => {
+    const allowed = new Set(buildAllColumnKeys(measureCount, beatsPerMeasure));
+    const known = knownColumnKeysRef.current;
+    known.forEach((k) => {
+      if (!allowed.has(k)) known.delete(k);
+    });
+    setCollapsedColumns((prev) => {
+      const next = prev.filter((id) => allowed.has(id));
+      for (const key of allowed) {
+        if (!known.has(key)) {
+          known.add(key);
+          next.push(key);
+        }
+      }
+      return next;
+    });
+  }, [beatsPerMeasure, measureCount]);
+
+  // ── Grid callbacks ─────────────────────────────────
+
+  const handleChangeMeasureCount = React.useCallback(
+    (next: number) => {
+      rememberHistory(notesRef.current);
+      setMeasureCount(next);
+      setNotes((prev) => prev.filter((n) => n.measure < next));
+      setBarNames((prev) => {
+        if (next <= prev.length) return prev.slice(0, next);
+        return [
+          ...prev,
+          ...Array.from(
+            { length: next - prev.length },
+            (_, i) => `Bar ${prev.length + i + 1}`,
+          ),
+        ];
+      });
+      setPlayheadBeat((prev) =>
+        Math.min(prev, Math.max(0, next * beatsPerMeasure - 1)),
+      );
+      setBarGroups((prev) =>
+        prev.map((g) => ({ ...g, bars: g.bars.filter((b) => b < next) })),
+      );
+      useEditorScore();
+    },
+    [beatsPerMeasure, rememberHistory, useEditorScore],
+  );
+
+  const handleChangeBeatsPerMeasure = React.useCallback(
+    (next: number) => {
+      rememberHistory(notesRef.current);
+      setBeatsPerMeasure(next);
+      setTimeSignatureNumerator(next);
+      setNotes((prev) => prev.map((n) => ({ ...n, beat: n.beat % next })));
+      setPlayheadBeat((prev) =>
+        Math.min(prev, Math.max(0, measureCount * next - 1)),
+      );
+      useEditorScore();
+    },
+    [measureCount, rememberHistory, useEditorScore],
+  );
+
+  const addOrSelectCell = React.useCallback(
+    (position: CellPosition) => {
+      setSelectedCell(position);
+      const cellId = buildCellId(position);
+      const existing = noteByCell.get(cellId);
+      if (existing) {
+        setSelectedNoteId(existing.id);
+        return;
+      }
+      rememberHistory(notesRef.current);
+      const id = `n-${Math.random().toString(36).slice(2, 10)}`;
+      setNotes((prev) => [
+        ...prev,
+        {
+          id,
+          measure: position.measure,
+          beat: position.beat,
+          string: position.string,
+          fret: 0,
+          duration: defaultDuration,
+          dynamic: "mf",
+          beatEffect: "none",
+          noteEffect: "none",
+          vibrato: "none",
+          slideIn: "none",
+          slideOut: "none",
+          isBend: false,
+          isLetRing: false,
+          isPalmMute: false,
+          isDead: false,
+          isStaccato: false,
+        },
+      ]);
+      setSelectedNoteId(id);
+      useEditorScore();
+    },
+    [defaultDuration, noteByCell, rememberHistory, useEditorScore],
+  );
+
+  const updateDuration = React.useCallback(
+    (duration: NoteDuration) => {
+      setDefaultDuration(duration);
+      if (!selectedNoteId) return;
+      rememberHistory(notesRef.current);
+      setNotes((prev) =>
+        prev.map((n) => (n.id === selectedNoteId ? { ...n, duration } : n)),
+      );
+      useEditorScore();
+    },
+    [rememberHistory, selectedNoteId, useEditorScore],
+  );
+
+  const updateNoteById = React.useCallback(
+    (
+      noteId: string,
+      updates: Partial<
+        Pick<
+          StudioNote,
+          | "fret"
+          | "duration"
+          | "dynamic"
+          | "beatEffect"
+          | "noteEffect"
+          | "vibrato"
+          | "slideIn"
+          | "slideOut"
+          | "isPalmMute"
+          | "isLetRing"
+          | "isStaccato"
+          | "isDead"
+          | "isBend"
+        >
+      >,
+    ) => {
+      rememberHistory(notesRef.current);
+      setNotes((prev) => {
+        const target = prev.find((n) => n.id === noteId);
+        if (!target) return prev;
+        return prev.map((note) => {
+          const sameBeat =
+            note.measure === target.measure && note.beat === target.beat;
+          const next = { ...note };
+          if (note.id === noteId) {
+            if (updates.fret !== undefined)
+              next.fret = Math.max(0, Math.min(24, updates.fret));
+            if (updates.noteEffect !== undefined)
+              next.noteEffect = updates.noteEffect;
+            if (updates.isDead !== undefined) next.isDead = updates.isDead;
+            if (updates.isBend !== undefined) next.isBend = updates.isBend;
+            if (updates.isPalmMute !== undefined)
+              next.isPalmMute = updates.isPalmMute;
+            if (updates.isLetRing !== undefined)
+              next.isLetRing = updates.isLetRing;
+            if (updates.isStaccato !== undefined)
+              next.isStaccato = updates.isStaccato;
+            if (updates.vibrato !== undefined) next.vibrato = updates.vibrato;
+            if (updates.slideIn !== undefined) next.slideIn = updates.slideIn;
+            if (updates.slideOut !== undefined)
+              next.slideOut = updates.slideOut;
+          }
+          if (sameBeat) {
+            if (updates.duration !== undefined)
+              next.duration = updates.duration;
+            if (updates.dynamic !== undefined) next.dynamic = updates.dynamic;
+            if (updates.beatEffect !== undefined)
+              next.beatEffect = updates.beatEffect;
+          }
+          return next;
+        });
+      });
+      setSelectedNoteId(noteId);
+      useEditorScore();
+    },
+    [rememberHistory, useEditorScore],
+  );
+
+  const removeNoteById = React.useCallback(
+    (noteId: string) => {
+      rememberHistory(notesRef.current);
+      setNotes((prev) => prev.filter((n) => n.id !== noteId));
+      setSelectedNoteId((prev) => (prev === noteId ? null : prev));
+      useEditorScore();
+    },
+    [rememberHistory, useEditorScore],
+  );
+
+  const removeSelectedNote = React.useCallback(() => {
+    if (!selectedNoteId) return;
+    rememberHistory(notesRef.current);
+    setNotes((prev) => prev.filter((n) => n.id !== selectedNoteId));
+    setSelectedNoteId(null);
+    useEditorScore();
+  }, [rememberHistory, selectedNoteId, useEditorScore]);
+
+  const clearCurrentMeasure = React.useCallback(() => {
+    rememberHistory(notesRef.current);
+    setNotes((prev) => prev.filter((n) => n.measure !== selectedMeasure));
+    setSelectedNoteId(null);
+    useEditorScore();
+  }, [rememberHistory, selectedMeasure, useEditorScore]);
+
+  const duplicateCurrentMeasure = React.useCallback(() => {
+    if (selectedMeasure >= measureCount - 1) return;
+    rememberHistory(notesRef.current);
+    setNotes((prev) => {
+      const source = prev.filter((n) => n.measure === selectedMeasure);
+      const duplicated = source.map((n) => ({
+        ...n,
+        id: `n-${Math.random().toString(36).slice(2, 10)}`,
+        measure: selectedMeasure + 1,
+      }));
+      const rest = prev.filter((n) => n.measure !== selectedMeasure + 1);
+      return [...rest, ...duplicated].sort((a, b) => {
+        if (a.measure !== b.measure) return a.measure - b.measure;
+        if (a.beat !== b.beat) return a.beat - b.beat;
+        return a.string - b.string;
+      });
+    });
+    useEditorScore();
+  }, [measureCount, rememberHistory, selectedMeasure, useEditorScore]);
+
+  const copyCurrentMeasure = React.useCallback(() => {
+    const copied = notesRef.current
+      .filter((n) => n.measure === selectedMeasure)
+      .map((n) => ({ ...n }));
+    copiedMeasureRef.current = copied;
+    setHasCopiedMeasure(copied.length > 0);
+    setAlphaStatus(
+      copied.length > 0
+        ? `Copied ${copied.length} note(s) from bar ${selectedMeasure + 1}`
+        : `Bar ${selectedMeasure + 1} is empty`,
+    );
+  }, [selectedMeasure, setAlphaStatus]);
+
+  const pasteToCurrentMeasure = React.useCallback(() => {
+    const copied = copiedMeasureRef.current;
+    if (!copied || copied.length === 0) return;
+    rememberHistory(notesRef.current);
+    setNotes((prev) => {
+      const rest = prev.filter((n) => n.measure !== selectedMeasure);
+      const pasted = copied.map((n) => ({
+        ...n,
+        id: `n-${Math.random().toString(36).slice(2, 10)}`,
+        measure: selectedMeasure,
+      }));
+      return [...rest, ...pasted].sort((a, b) => {
+        if (a.measure !== b.measure) return a.measure - b.measure;
+        if (a.beat !== b.beat) return a.beat - b.beat;
+        return a.string - b.string;
+      });
+    });
+    useEditorScore();
+    setAlphaStatus(
+      `Pasted ${copied.length} note(s) to bar ${selectedMeasure + 1}`,
+    );
+  }, [rememberHistory, selectedMeasure, setAlphaStatus, useEditorScore]);
+
+  // ── Project snapshot ───────────────────────────────
+
+  const applyProjectSnapshot = React.useCallback(
+    (project: StudioProjectSnapshot) => {
+      historyRef.current = [];
+      redoRef.current = [];
+      copiedMeasureRef.current = null;
+      setCurrentProjectId(project.id);
+      setTitle(project.title);
+      setMeasureCount(project.measureCount);
+      setBeatsPerMeasure(project.beatsPerMeasure);
+      setTimeSignatureNumerator(project.timeSignatureNumerator);
+      setTempo(project.tempo);
+      setCellWidth(project.cellWidth);
+      setStringTuning(project.stringTuning);
+      setDefaultDuration(project.defaultDuration);
+      setBarNames(
+        project.barNames.length === project.measureCount
+          ? project.barNames
+          : Array.from(
+              { length: project.measureCount },
+              (_, i) => project.barNames[i] ?? `Bar ${i + 1}`,
+            ),
+      );
+      const rawGroups = Array.isArray(project.barGroups)
+        ? project.barGroups
+        : [];
+      const ids = new Set(
+        rawGroups
+          .map((g) => g?.id)
+          .filter((id): id is string => typeof id === "string"),
+      );
+      const normalizedGroups: SidebarGroup[] = rawGroups
+        .map((g) => ({
+          id: String(g.id),
+          name:
+            typeof g.name === "string" && g.name.trim().length > 0
+              ? g.name
+              : "Group",
+          bars: Array.from(
+            new Set(
+              (Array.isArray(g.bars) ? g.bars : [])
+                .map((b) => Number(b))
+                .filter(
+                  (b) =>
+                    Number.isFinite(b) && b >= 0 && b < project.measureCount,
+                ),
+            ),
+          ),
+          parentGroupId:
+            typeof g.parentGroupId === "string" && ids.has(g.parentGroupId)
+              ? g.parentGroupId
+              : null,
+          collapsed: Boolean(g.collapsed),
+        }))
+        .filter((g) => g.id.length > 0);
+
+      setNotes(project.notes);
+      setSelectedCell(null);
+      setSelectedNoteId(null);
+      setSelectedSidebarBars([0]);
+      setActiveSidebarItemKey("bar:0");
+      setSelectedSidebarItemKeys(["bar:0"]);
+      setExpandedBars([]);
+      const cols = buildAllColumnKeys(
+        project.measureCount,
+        project.beatsPerMeasure,
+      );
+      knownColumnKeysRef.current = new Set(cols);
+      setCollapsedColumns(cols);
+      setActiveSidebarBar(0);
+      setActiveSidebarGroupId(null);
+      setEditingGroupId(null);
+      setEditingGroupName("");
+      setBarGroups(normalizedGroups);
+      setPlayheadBeat(0);
+      setHasCopiedMeasure(false);
+      setCanUndo(false);
+      setCanRedo(false);
+      useEditorScore();
+      setAlphaStatus(`Project loaded: ${project.name}`);
+    },
+    [setAlphaStatus, useEditorScore],
+  );
+
+  const createNewProject = React.useCallback(() => {
+    historyRef.current = [];
+    redoRef.current = [];
+    copiedMeasureRef.current = null;
+    setCurrentProjectId(`studio-${crypto.randomUUID()}`);
+    setTitle("Untitled Studio Project");
+    setMeasureCount(4);
+    setBeatsPerMeasure(4);
+    setTimeSignatureNumerator(4);
+    setTempo(96);
+    setCellWidth(56);
+    setStringTuning(STRING_TUNING);
+    setDefaultDuration(4);
+    setBarNames(Array.from({ length: 4 }, (_, i) => `Bar ${i + 1}`));
+    setNotes(createInitialNotes());
+    setSelectedCell(null);
+    setSelectedNoteId(null);
+    setSelectedSidebarBars([0]);
+    setActiveSidebarItemKey("bar:0");
+    setSelectedSidebarItemKeys(["bar:0"]);
+    setExpandedBars([]);
+    const cols = buildAllColumnKeys(4, 4);
+    knownColumnKeysRef.current = new Set(cols);
+    setCollapsedColumns(cols);
+    setActiveSidebarBar(0);
+    setActiveSidebarGroupId(null);
+    setEditingGroupId(null);
+    setEditingGroupName("");
+    setBarGroups([]);
+    setPlayheadBeat(0);
+    setHasCopiedMeasure(false);
+    setCanUndo(false);
+    setCanRedo(false);
+    useEditorScore();
+    setAlphaStatus("New project created");
+  }, [setAlphaStatus, useEditorScore]);
+
+  // ── Undo / Redo ────────────────────────────────────
+
+  const undo = React.useCallback(() => {
+    const previous = historyRef.current.pop();
+    if (!previous) return;
+    isRestoringHistoryRef.current = true;
+    redoRef.current.push(notesRef.current);
+    setNotes(previous);
+    window.setTimeout(() => {
+      isRestoringHistoryRef.current = false;
+    }, 0);
+    setSelectedNoteId(null);
+    useEditorScore();
+  }, [useEditorScore]);
+
+  const redo = React.useCallback(() => {
+    const next = redoRef.current.pop();
+    if (!next) return;
+    isRestoringHistoryRef.current = true;
+    historyRef.current.push(notesRef.current);
+    setNotes(next);
+    window.setTimeout(() => {
+      isRestoringHistoryRef.current = false;
+    }, 0);
+    setSelectedNoteId(null);
+    useEditorScore();
+  }, [useEditorScore]);
+
+  // ── Keyboard: fret input, delete, undo/redo ────────
+
+  const fretInputTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+  const fretInputFreshRef = React.useRef(true);
+
+  React.useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      const tag = (event.target as HTMLElement)?.tagName;
+      if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") return;
+
+      const activeCellNote = selectedCell
+        ? noteByCell.get(buildCellId(selectedCell))
+        : null;
+      const currentNoteId = selectedNoteId ?? activeCellNote?.id ?? null;
+
+      if (event.key >= "0" && event.key <= "9") {
+        event.preventDefault();
+        const digit = Number(event.key);
+        const isFresh = fretInputFreshRef.current;
+        if (fretInputTimerRef.current) clearTimeout(fretInputTimerRef.current);
+        rememberHistory(notesRef.current);
+
+        if (currentNoteId) {
+          setNotes((prev) =>
+            prev.map((n) => {
+              if (n.id !== currentNoteId) return n;
+              const raw = isFresh ? digit : Number(`${n.fret}${digit}`);
+              const fret = raw > 24 ? digit : Math.max(0, raw);
+              return { ...n, fret };
+            }),
+          );
+          setSelectedNoteId(currentNoteId);
+        } else if (selectedCell) {
+          const id = `n-${Math.random().toString(36).slice(2, 10)}`;
+          setNotes((prev) => [
+            ...prev,
+            {
+              id,
+              measure: selectedCell.measure,
+              beat: selectedCell.beat,
+              string: selectedCell.string,
+              fret: digit,
+              duration: defaultDuration,
+              dynamic: "mf",
+              beatEffect: "none",
+              noteEffect: "none",
+              vibrato: "none",
+              slideIn: "none",
+              slideOut: "none",
+              isBend: false,
+              isLetRing: false,
+              isPalmMute: false,
+              isDead: false,
+              isStaccato: false,
+            },
+          ]);
+          setSelectedNoteId(id);
+        } else {
+          return;
+        }
+
+        useEditorScore();
+        fretInputFreshRef.current = false;
+        fretInputTimerRef.current = setTimeout(() => {
+          fretInputFreshRef.current = true;
+        }, 800);
+      }
+
+      if (event.key === "Backspace" || event.key === "Delete") {
+        const activeKind = activeSidebarItemKey.split(":")[0] ?? "";
+        if (sidebarHasFocus && activeKind !== "note") return;
+        if (!currentNoteId) return;
+        event.preventDefault();
+        rememberHistory(notesRef.current);
+        setNotes((prev) => prev.filter((n) => n.id !== currentNoteId));
+        setSelectedNoteId(null);
+        useEditorScore();
+      }
+
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "z") {
+        event.preventDefault();
+        if (event.shiftKey) redo();
+        else undo();
+      }
+
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "y") {
+        event.preventDefault();
+        redo();
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      if (fretInputTimerRef.current) clearTimeout(fretInputTimerRef.current);
+    };
+  }, [
+    defaultDuration,
+    noteByCell,
+    redo,
+    rememberHistory,
+    activeSidebarItemKey,
+    selectedCell,
+    selectedNoteId,
+    sidebarHasFocus,
+    undo,
+    useEditorScore,
+  ]);
+
+  // ── Playback controls ──────────────────────────────
+
+  const stopPlayback = React.useCallback(() => {
+    stop();
+    setIsPlaybackRunning(false);
+    setPlayingNoteIds([]);
+    const grid = gridContainerRef.current;
+    if (grid) {
+      grid
+        .querySelectorAll(".studio-cell-playing")
+        .forEach((el) => el.classList.remove("studio-cell-playing"));
+      grid
+        .querySelectorAll(".studio-note-playing")
+        .forEach((el) => el.classList.remove("studio-note-playing"));
+    }
+  }, [stop]);
+
+  const togglePlayback = React.useCallback(() => {
+    playPause();
+  }, [playPause]);
+
+  const scrollToPlayhead = React.useCallback(() => {
+    const grid = gridContainerRef.current;
+    if (!grid) return;
+    const playing = grid.querySelector(".studio-cell-playing");
+    playing?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+      inline: "nearest",
+    });
+  }, []);
+
+  const handleClickRulerBeat = React.useCallback(
+    (measure: number, beat: number) => {
+      setPlayheadBeat(measure * beatsPerMeasure + beat);
+      seekToBeat(measure, beat);
+    },
+    [beatsPerMeasure, seekToBeat],
+  );
+
+  // ── Import / Export ────────────────────────────────
+
+  const applyImportedTrack = React.useCallback(
+    (trackIndex: number) => {
+      const score = importedScoreRef.current;
+      if (!score) return;
+      const imported = importScoreToStudio(score, trackIndex);
+
+      historyRef.current = [];
+      redoRef.current = [];
+      copiedMeasureRef.current = null;
+      setTitle(imported.title);
+      setTempo(imported.tempo);
+      setMeasureCount(imported.measureCount);
+      setTimeSignatureNumerator(imported.timeSignatureNumerator);
+      setBeatsPerMeasure(imported.gridStepsPerMeasure);
+      setStringTuning(imported.tuning);
+      setBarNames(
+        Array.from({ length: imported.measureCount }, (_, i) => `Bar ${i + 1}`),
+      );
+      setNotes(imported.notes);
+      setSelectedCell(null);
+      setSelectedNoteId(null);
+      setSelectedSidebarBars([0]);
+      setActiveSidebarItemKey("bar:0");
+      setSelectedSidebarItemKeys(["bar:0"]);
+      setExpandedBars([]);
+      const cols = buildAllColumnKeys(
+        imported.measureCount,
+        imported.gridStepsPerMeasure,
+      );
+      knownColumnKeysRef.current = new Set(cols);
+      setCollapsedColumns(cols);
+      setActiveSidebarBar(0);
+      setActiveSidebarGroupId(null);
+      setEditingGroupId(null);
+      setEditingGroupName("");
+      setBarGroups([]);
+      setDefaultDuration(imported.notes[0]?.duration ?? 4);
+      setPlayheadBeat(0);
+      setHasCopiedMeasure(false);
+      setCanUndo(false);
+      setCanRedo(false);
+      renderImportedScore(score, [trackIndex]);
+      setAlphaStatus(
+        imported.warnings.length > 0
+          ? `Track ${trackIndex + 1} loaded (${imported.warnings.join("; ")})`
+          : `Track ${trackIndex + 1} loaded`,
+      );
+    },
+    [renderImportedScore, setAlphaStatus],
+  );
+
+  const exportAlphaTex = React.useCallback(() => {
+    const blob = new Blob([alphaTex], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `studio-${new Date().toISOString().slice(0, 19).replace(/:/g, "-")}.alphatex`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [alphaTex]);
+
+  const importGuitarPro = React.useCallback(
+    async (file: File) => {
+      setIsImporting(true);
+      try {
+        const alphaTab = await import("@coderline/alphatab");
+        const buffer = await file.arrayBuffer();
+        const bytes = new Uint8Array(buffer);
+        const score = alphaTab.importer.ScoreLoader.loadScoreFromBytes(bytes);
+        importedScoreRef.current = score;
+        applyImportedTrack(0);
+        setIsPlaybackRunning(false);
+        setAlphaStatus(`Loaded GP file: ${file.name}`);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        setAlphaStatus(`Failed to import ${file.name}: ${message}`);
+      } finally {
+        setIsImporting(false);
+      }
+    },
+    [applyImportedTrack, setAlphaStatus],
+  );
+
+  // ── Derived selection state ────────────────────────
+
+  const selectedDuration = selectedNote?.duration ?? defaultDuration;
+  const hasActiveSelection = selectedCell !== null || selectedNote !== null;
+
+  // ── Sidebar tree memos ─────────────────────────────
+
+  const firstPitchClassByMeasure = React.useMemo(() => {
+    const map = new Map<number, number>();
+    const sorted = [...notes].sort((a, b) => {
+      if (a.measure !== b.measure) return a.measure - b.measure;
+      if (a.beat !== b.beat) return a.beat - b.beat;
+      return a.string - b.string;
+    });
+    for (const note of sorted) {
+      if (note.isDead) continue;
+      if (!map.has(note.measure)) map.set(note.measure, toPitchClass(note));
+    }
+    return map;
+  }, [notes]);
+
+  const groupIdByBar = React.useMemo(() => {
+    const map = new Map<number, string>();
+    for (const g of barGroups) {
+      for (const b of g.bars) {
+        if (!map.has(b)) map.set(b, g.id);
+      }
+    }
+    return map;
+  }, [barGroups]);
+
+  const groupsByParent = React.useMemo(() => {
+    const byId = new Set(barGroups.map((g) => g.id));
+    const map = new Map<string | null, SidebarGroup[]>();
+    for (const g of barGroups) {
+      const pid =
+        g.parentGroupId && byId.has(g.parentGroupId) ? g.parentGroupId : null;
+      const list = map.get(pid) ?? [];
+      list.push(g);
+      map.set(pid, list);
+    }
+    return map;
+  }, [barGroups]);
+
+  const topLevelGroups = React.useMemo(
+    () => groupsByParent.get(null) ?? [],
+    [groupsByParent],
+  );
+
+  const ungroupedBars = React.useMemo(() => {
+    return Array.from({ length: measureCount }, (_, i) => i).filter(
+      (b) => !groupIdByBar.has(b),
+    );
+  }, [groupIdByBar, measureCount]);
+
+  const sidebarSortableItems = React.useMemo(() => {
+    const flatten = (g: SidebarGroup): string[] => {
+      const self = [`group:${g.id}`, ...g.bars.map((b) => `bar:${b}`)];
+      if (g.collapsed) return self;
+      return [...self, ...(groupsByParent.get(g.id) ?? []).flatMap(flatten)];
+    };
+    return [
+      ...ungroupedBars.map((b) => `bar:${b}`),
+      ...topLevelGroups.flatMap(flatten),
+    ];
+  }, [groupsByParent, topLevelGroups, ungroupedBars]);
+
+  const visibleSidebarItemKeys = React.useMemo(() => {
+    const list: string[] = [];
+    const pushDetails = (measure: number) => {
+      if (!expandedBars.includes(measure)) return;
+      for (let beat = 0; beat < beatsPerMeasure; beat++) {
+        const colKey = `col:${measure}:${beat}`;
+        list.push(colKey);
+        if (collapsedColumns.includes(colKey)) continue;
+        for (let s = 0; s < stringTuning.length; s++) {
+          list.push(`note:${measure}:${beat}:${s}`);
+        }
+      }
+    };
+    const walkGroup = (g: SidebarGroup) => {
+      list.push(`group:${g.id}`);
+      if (g.collapsed) return;
+      for (const m of g.bars) {
+        list.push(`bar:${m}`);
+        pushDetails(m);
+      }
+      for (const child of groupsByParent.get(g.id) ?? []) walkGroup(child);
+    };
+    for (const m of ungroupedBars) {
+      list.push(`bar:${m}`);
+      pushDetails(m);
+    }
+    for (const g of topLevelGroups) walkGroup(g);
+    return list;
+  }, [
+    barGroups,
+    beatsPerMeasure,
+    collapsedColumns,
+    expandedBars,
+    groupsByParent,
+    stringTuning.length,
+    topLevelGroups,
+    ungroupedBars,
+  ]);
+
+  // ── Sidebar selection ──────────────────────────────
+
+  const selectSidebarItem = React.useCallback(
+    (key: string, withShift = false, withCtrl = false) => {
+      setActiveSidebarItemKey(key);
+      setSelectedSidebarItemKeys((prev) => {
+        if (withShift) {
+          const anchor = sidebarSelectionAnchorKeyRef.current;
+          const start = visibleSidebarItemKeys.indexOf(anchor);
+          const end = visibleSidebarItemKeys.indexOf(key);
+          if (start >= 0 && end >= 0) {
+            const [from, to] = start < end ? [start, end] : [end, start];
+            const range = visibleSidebarItemKeys.slice(from, to + 1);
+            return withCtrl ? Array.from(new Set([...prev, ...range])) : range;
+          }
+          return withCtrl
+            ? Array.from(new Set([...prev, key]))
+            : prev.includes(key)
+              ? prev
+              : [...prev, key];
+        }
+        sidebarSelectionAnchorKeyRef.current = key;
+        if (!withCtrl) return [key];
+        return prev.includes(key)
+          ? prev.filter((k) => k !== key)
+          : [...prev, key];
+      });
+    },
+    [visibleSidebarItemKeys],
+  );
+
+  const isSidebarItemSelected = React.useCallback(
+    (key: string) => selectedSidebarItemKeys.includes(key),
+    [selectedSidebarItemKeys],
+  );
+
+  // ── Batch edit ─────────────────────────────────────
+
+  const openBatchEditFromKey = React.useCallback(
+    (key: string) => {
+      const targets =
+        selectedSidebarItemKeys.length > 1 &&
+        selectedSidebarItemKeys.includes(key)
+          ? selectedSidebarItemKeys
+          : [key];
+      setBatchEditTargetKeys(targets);
+      setBatchEditDraft({
+        duration: "keep",
+        dynamic: "keep",
+        palmMute: "keep",
+      });
+      setBatchEditOpen(true);
+    },
+    [selectedSidebarItemKeys],
+  );
+
+  const resolveBatchTargetNoteIds = React.useCallback(
+    (keys: string[]) => {
+      const parsed = keys.map(parseSidebarNodeKey);
+      const groupIds = new Set<string>();
+      const barMeasures = new Set<number>();
+      const columnTargets = new Set<string>();
+      const noteTargets = new Set<string>();
+
+      for (const item of parsed) {
+        if (item.kind === "group") {
+          const gid = item.raw.split(":")[1];
+          if (gid) groupIds.add(gid);
+        } else if (item.kind === "bar" && Number.isFinite(item.measure)) {
+          barMeasures.add(item.measure);
+        } else if (
+          item.kind === "col" &&
+          Number.isFinite(item.measure) &&
+          Number.isFinite(item.beat)
+        ) {
+          columnTargets.add(`${item.measure}:${item.beat}`);
+        } else if (
+          item.kind === "note" &&
+          Number.isFinite(item.measure) &&
+          Number.isFinite(item.beat) &&
+          Number.isFinite(item.string)
+        ) {
+          noteTargets.add(`${item.measure}:${item.beat}:${item.string}`);
+        }
+      }
+
+      if (groupIds.size > 0) {
+        let changed = true;
+        while (changed) {
+          changed = false;
+          for (const g of barGroups) {
+            if (
+              g.parentGroupId &&
+              groupIds.has(g.parentGroupId) &&
+              !groupIds.has(g.id)
+            ) {
+              groupIds.add(g.id);
+              changed = true;
+            }
+          }
+        }
+        for (const g of barGroups) {
+          if (!groupIds.has(g.id)) continue;
+          for (const b of g.bars) barMeasures.add(b);
+        }
+      }
+
+      return notes
+        .filter((n) => {
+          if (barMeasures.has(n.measure)) return true;
+          if (columnTargets.has(`${n.measure}:${n.beat}`)) return true;
+          if (noteTargets.has(`${n.measure}:${n.beat}:${n.string}`))
+            return true;
+          return false;
+        })
+        .map((n) => n.id);
+    },
+    [barGroups, notes],
+  );
+
+  const applyBatchEditToTargets = React.useCallback(() => {
+    const hasChanges =
+      batchEditDraft.duration !== "keep" ||
+      batchEditDraft.dynamic !== "keep" ||
+      batchEditDraft.palmMute !== "keep";
+    if (!hasChanges) {
+      setBatchEditOpen(false);
+      return;
+    }
+
+    const targetIds = resolveBatchTargetNoteIds(batchEditTargetKeys);
+    if (targetIds.length === 0) {
+      setAlphaStatus("No notes in selected batch edit scope");
+      setBatchEditOpen(false);
+      return;
+    }
+
+    const durationValue =
+      batchEditDraft.duration === "keep"
+        ? null
+        : (Number(batchEditDraft.duration) as NoteDuration);
+    const dynamicValue =
+      batchEditDraft.dynamic === "keep" ? null : batchEditDraft.dynamic;
+    const palmMuteValue =
+      batchEditDraft.palmMute === "keep"
+        ? null
+        : batchEditDraft.palmMute === "on";
+    const idSet = new Set(targetIds);
+
+    rememberHistory(notesRef.current);
+    setNotes((prev) =>
+      prev.map((n) => {
+        if (!idSet.has(n.id)) return n;
+        const nd = durationValue ?? n.duration;
+        const ny = dynamicValue ?? n.dynamic;
+        const np = palmMuteValue ?? n.isPalmMute;
+        if (nd === n.duration && ny === n.dynamic && np === n.isPalmMute)
+          return n;
+        return { ...n, duration: nd, dynamic: ny, isPalmMute: np };
+      }),
+    );
+    useEditorScore();
+    setBatchEditOpen(false);
+    setAlphaStatus(`Batch updated ${targetIds.length} note(s)`);
+  }, [
+    batchEditDraft,
+    batchEditTargetKeys,
+    rememberHistory,
+    resolveBatchTargetNoteIds,
+    setAlphaStatus,
+    useEditorScore,
+  ]);
+
+  // ── Bulk delete measures ───────────────────────────
+
+  const deleteMeasuresBulk = React.useCallback(
+    (measures: number[]) => {
+      const unique = Array.from(
+        new Set(measures.filter(Number.isFinite).map(Math.floor)),
+      )
+        .filter((m) => m >= 0 && m < measureCount)
+        .sort((a, b) => a - b);
+      if (unique.length === 0) return;
+
+      const maxDel = Math.max(0, measureCount - 1);
+      const deleting = unique.slice(0, maxDel);
+      if (deleting.length === 0) return;
+
+      const deleteSet = new Set(deleting);
+      const shiftDown = (m: number) =>
+        deleting.reduce((c, d) => (d < m ? c + 1 : c), 0);
+
+      rememberHistory(notesRef.current);
+      setMeasureCount((prev) => Math.max(1, prev - deleting.length));
+      setNotes((prev) =>
+        prev
+          .filter((n) => !deleteSet.has(n.measure))
+          .map((n) => ({ ...n, measure: n.measure - shiftDown(n.measure) })),
+      );
+      setBarNames((prev) => {
+        const next = prev.filter((_, i) => !deleteSet.has(i));
+        return next.length === 0 ? ["Bar 1"] : next;
+      });
+      setBarGroups((prev) =>
+        prev.map((g) => ({
+          ...g,
+          bars: g.bars
+            .filter((b) => !deleteSet.has(b))
+            .map((b) => b - shiftDown(b)),
+        })),
+      );
+      setSelectedCell((prev) => {
+        if (!prev) return prev;
+        if (deleteSet.has(prev.measure)) return null;
+        return { ...prev, measure: prev.measure - shiftDown(prev.measure) };
+      });
+      setActiveSidebarBar((prev) => {
+        if (deleteSet.has(prev)) return Math.max(0, prev - shiftDown(prev) - 1);
+        return Math.max(0, prev - shiftDown(prev));
+      });
+      setSelectedSidebarBars((prev) =>
+        prev.filter((m) => !deleteSet.has(m)).map((m) => m - shiftDown(m)),
+      );
+      useEditorScore();
+    },
+    [measureCount, rememberHistory, useEditorScore],
+  );
+
+  // ── Delete sidebar selection ───────────────────────
+
+  const deleteSidebarSelection = React.useCallback(
+    (keys?: string[]) => {
+      const targets = keys && keys.length > 0 ? keys : selectedSidebarItemKeys;
+      if (targets.length === 0) return;
+
+      const parsed = targets.map(parseSidebarNodeKey);
+      const groupIds = new Set(
+        parsed
+          .filter((p) => p.kind === "group")
+          .map((p) => p.raw.split(":")[1]),
+      );
+      const barMeasures = new Set(
+        parsed
+          .filter((p) => p.kind === "bar" && Number.isFinite(p.measure))
+          .map((p) => p.measure),
+      );
+      const columnTargets = parsed.filter(
+        (p) =>
+          p.kind === "col" &&
+          Number.isFinite(p.measure) &&
+          Number.isFinite(p.beat),
+      );
+      const noteTargets = parsed.filter(
+        (p) =>
+          p.kind === "note" &&
+          Number.isFinite(p.measure) &&
+          Number.isFinite(p.beat) &&
+          Number.isFinite(p.string),
+      );
+      const barDeleteMeasures = [...barMeasures].filter(
+        (m) => !notesRef.current.some((n) => n.measure === m),
+      );
+
+      if (groupIds.size > 0) {
+        setBarGroups((prev) => {
+          const desc = new Set<string>(
+            [...groupIds].filter((id): id is string => Boolean(id)),
+          );
+          let changed = true;
+          while (changed) {
+            changed = false;
+            for (const g of prev) {
+              if (
+                g.parentGroupId &&
+                desc.has(g.parentGroupId) &&
+                !desc.has(g.id)
+              ) {
+                desc.add(g.id);
+                changed = true;
+              }
+            }
+          }
+          return prev.filter((g) => !desc.has(g.id));
+        });
+      }
+
+      if (
+        barMeasures.size > 0 ||
+        columnTargets.length > 0 ||
+        noteTargets.length > 0
+      ) {
+        rememberHistory(notesRef.current);
+        setNotes((prev) =>
+          prev.filter((n) => {
+            if (barMeasures.has(n.measure)) return false;
+            if (
+              columnTargets.some(
+                (c) => n.measure === c.measure && n.beat === c.beat,
+              )
+            )
+              return false;
+            if (
+              noteTargets.some(
+                (t) =>
+                  n.measure === t.measure &&
+                  n.beat === t.beat &&
+                  n.string === t.string,
+              )
+            )
+              return false;
+            return true;
+          }),
+        );
+        setSelectedNoteId(null);
+        useEditorScore();
+      }
+
+      if (barDeleteMeasures.length > 0) deleteMeasuresBulk(barDeleteMeasures);
+      setSelectedSidebarItemKeys([]);
+      setActiveSidebarItemKey("");
+    },
+    [
+      deleteMeasuresBulk,
+      rememberHistory,
+      selectedSidebarItemKeys,
+      useEditorScore,
+    ],
+  );
+
+  // ── Sidebar navigation ─────────────────────────────
+
+  const jumpToMeasure = React.useCallback(
+    (measure: number, withShift = false, withCtrl = false) => {
+      setSidebarHasFocus(true);
+      setActiveSidebarGroupId(groupIdByBar.get(measure) ?? null);
+      setActiveSidebarBar(measure);
+      selectSidebarItem(`bar:${measure}`, withShift, withCtrl);
+
+      if (withShift) {
+        const anchor = selectionAnchorRef.current;
+        const start = Math.max(0, Math.min(anchor, measure));
+        const end = Math.min(measureCount - 1, Math.max(anchor, measure));
+        setSelectedSidebarBars(
+          Array.from({ length: end - start + 1 }, (_, i) => start + i),
+        );
+      } else if (!withCtrl) {
+        selectionAnchorRef.current = measure;
+        setSelectedSidebarBars([measure]);
+      }
+
+      setSelectedCell((prev) => ({
+        measure,
+        beat: prev?.beat ?? 0,
+        string: prev?.string ?? 0,
+      }));
+
+      const grid = gridContainerRef.current;
+      if (!grid) return;
+      const target =
+        grid.querySelector<HTMLElement>(
+          `[data-cell-id="cell:${measure}:0:0"]`,
+        ) ??
+        grid.querySelector<HTMLElement>(`[data-abs-beat="${measure * 1000}"]`);
+      target?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+        inline: "nearest",
+      });
+    },
+    [groupIdByBar, measureCount, selectSidebarItem],
+  );
+
+  const toggleBarCollapsed = React.useCallback((measure: number) => {
+    setExpandedBars((prev) =>
+      prev.includes(measure)
+        ? prev.filter((m) => m !== measure)
+        : [...prev, measure],
+    );
+  }, []);
+
+  const jumpToBarColumnString = React.useCallback(
+    (measure: number, beat: number, string: number) => {
+      setSidebarHasFocus(true);
+      setActiveSidebarGroupId(groupIdByBar.get(measure) ?? null);
+      setActiveSidebarBar(measure);
+      setSelectedSidebarBars([measure]);
+      selectSidebarItem(`note:${measure}:${beat}:${string}`);
+      selectionAnchorRef.current = measure;
+
+      const position = { measure, beat, string };
+      setSelectedCell(position);
+      const existing = noteByCell.get(buildCellId(position));
+      setSelectedNoteId(existing?.id ?? null);
+
+      const grid = gridContainerRef.current;
+      if (!grid) return;
+      const target = grid.querySelector<HTMLElement>(
+        `[data-cell-id="cell:${measure}:${beat}:${string}"]`,
+      );
+      target?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+        inline: "nearest",
+      });
+    },
+    [groupIdByBar, noteByCell, selectSidebarItem],
+  );
+
+  // ── Group CRUD ─────────────────────────────────────
+
+  const createGroupFromSelection = React.useCallback(
+    (parentId?: string) => {
+      const bars = [...selectedSidebarBars];
+      if (bars.length === 0) return;
+      const now = Date.now().toString(36);
+      const group: SidebarGroup = {
+        id: `g-${now}`,
+        name: `Group ${barGroups.length + 1}`,
+        bars,
+        parentGroupId: parentId ?? activeSidebarGroupId,
+        collapsed: false,
+      };
+      setBarGroups((prev) => {
+        const grouped = new Set(bars);
+        const cleaned = prev.map((g) => ({
+          ...g,
+          bars: g.bars.filter((b) => !grouped.has(b)),
+        }));
+        const hasParent = cleaned.some((g) => g.id === group.parentGroupId);
+        return [
+          ...cleaned,
+          { ...group, parentGroupId: hasParent ? group.parentGroupId : null },
+        ];
+      });
+      setActiveSidebarGroupId(group.id);
+    },
+    [activeSidebarGroupId, barGroups.length, selectedSidebarBars],
+  );
+
+  const renameGroup = React.useCallback((groupId: string, nextName: string) => {
+    const trimmed = nextName.trim();
+    if (!trimmed) return;
+    setBarGroups((prev) =>
+      prev.map((g) => (g.id === groupId ? { ...g, name: trimmed } : g)),
+    );
+  }, []);
+
+  const duplicateGroup = React.useCallback((groupId: string) => {
+    setBarGroups((prev) => {
+      const source = prev.find((g) => g.id === groupId);
+      if (!source) return prev;
+      const dup: SidebarGroup = {
+        id: `g-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+        name: `${source.name} Copy`,
+        bars: [...source.bars],
+        parentGroupId: source.parentGroupId,
+        collapsed: false,
+      };
+      const idx = prev.findIndex((g) => g.id === groupId);
+      if (idx < 0) return [...prev, dup];
+      const draft = [...prev];
+      draft.splice(idx + 1, 0, dup);
+      return draft;
+    });
+  }, []);
+
+  const removeGroup = React.useCallback((groupId: string) => {
+    setBarGroups((prev) => {
+      const desc = new Set<string>([groupId]);
+      let changed = true;
+      while (changed) {
+        changed = false;
+        for (const g of prev) {
+          if (g.parentGroupId && desc.has(g.parentGroupId) && !desc.has(g.id)) {
+            desc.add(g.id);
+            changed = true;
+          }
+        }
+      }
+      return prev.filter((g) => !desc.has(g.id));
+    });
+    setActiveSidebarGroupId((prev) => (prev === groupId ? null : prev));
+    setEditingGroupId((prev) => (prev === groupId ? null : prev));
+  }, []);
+
+  const toggleGroupCollapsed = React.useCallback((groupId: string) => {
+    setBarGroups((prev) =>
+      prev.map((g) =>
+        g.id === groupId ? { ...g, collapsed: !g.collapsed } : g,
+      ),
+    );
+  }, []);
+
+  const startRenameGroup = React.useCallback(
+    (groupId: string) => {
+      const current = barGroups.find((g) => g.id === groupId);
+      if (!current) return;
+      setEditingGroupId(groupId);
+      setEditingGroupName(current.name);
+      setActiveSidebarGroupId(groupId);
+      setSidebarHasFocus(true);
+    },
+    [barGroups],
+  );
+
+  const commitRenameGroup = React.useCallback(
+    (groupId: string, nextName: string) => {
+      renameGroup(groupId, nextName);
+      setEditingGroupId(null);
+    },
+    [renameGroup],
+  );
+
+  const commitRenameBar = React.useCallback((measure: number, next: string) => {
+    setBarNames((prev) => {
+      const draft = [...prev];
+      const trimmed = next.trim();
+      draft[measure] = trimmed.length > 0 ? trimmed : `Bar ${measure + 1}`;
+      return draft;
+    });
+    setEditingBar(null);
+  }, []);
+
+  // ── Measure CRUD ───────────────────────────────────
+
+  const clearMeasureAt = React.useCallback(
+    (measure: number) => {
+      rememberHistory(notesRef.current);
+      setNotes((prev) => prev.filter((n) => n.measure !== measure));
+      setSelectedNoteId(null);
+      useEditorScore();
+    },
+    [rememberHistory, useEditorScore],
+  );
+
+  const duplicateMeasureAt = React.useCallback(
+    (measure: number) => {
+      const nextCount = Math.min(128, measureCount + 1);
+      if (nextCount === measureCount) return;
+      rememberHistory(notesRef.current);
+      setMeasureCount(nextCount);
+      setNotes((prev) => {
+        const shifted = prev.map((n) =>
+          n.measure > measure ? { ...n, measure: n.measure + 1 } : n,
+        );
+        const cloned = prev
+          .filter((n) => n.measure === measure)
+          .map((n) => ({
+            ...n,
+            id: `n-${Math.random().toString(36).slice(2, 10)}`,
+            measure: measure + 1,
+          }));
+        return [...shifted, ...cloned].sort((a, b) => {
+          if (a.measure !== b.measure) return a.measure - b.measure;
+          if (a.beat !== b.beat) return a.beat - b.beat;
+          return a.string - b.string;
+        });
+      });
+      setBarNames((prev) => {
+        const draft = [...prev];
+        draft.splice(
+          measure + 1,
+          0,
+          `${(prev[measure] ?? `Bar ${measure + 1}`).trim()} Copy`,
+        );
+        return draft.slice(0, nextCount);
+      });
+      setBarGroups((prev) =>
+        prev.map((g) => ({
+          ...g,
+          bars: g.bars.flatMap((b) => {
+            if (b === measure) return [b, b + 1];
+            if (b > measure) return [b + 1];
+            return [b];
+          }),
+        })),
+      );
+      setActiveSidebarBar(Math.min(nextCount - 1, measure + 1));
+      setSelectedCell((prev) => {
+        if (!prev) return prev;
+        return prev.measure > measure
+          ? { ...prev, measure: prev.measure + 1 }
+          : prev;
+      });
+      useEditorScore();
+    },
+    [measureCount, rememberHistory, useEditorScore],
+  );
+
+  const deleteMeasureAt = React.useCallback(
+    (measure: number) => {
+      if (measureCount <= 1) return;
+      rememberHistory(notesRef.current);
+      setMeasureCount((prev) => Math.max(1, prev - 1));
+      setNotes((prev) =>
+        prev
+          .filter((n) => n.measure !== measure)
+          .map((n) =>
+            n.measure > measure ? { ...n, measure: n.measure - 1 } : n,
+          ),
+      );
+      setBarNames((prev) => {
+        const draft = [...prev];
+        draft.splice(measure, 1);
+        return draft.length > 0 ? draft : ["Bar 1"];
+      });
+      setBarGroups((prev) =>
+        prev.map((g) => ({
+          ...g,
+          bars: g.bars
+            .filter((b) => b !== measure)
+            .map((b) => (b > measure ? b - 1 : b)),
+        })),
+      );
+      setActiveSidebarBar((prev) =>
+        Math.max(
+          0,
+          Math.min(measureCount - 2, prev > measure ? prev - 1 : prev),
+        ),
+      );
+      setSelectedCell((prev) => {
+        if (!prev) return prev;
+        if (prev.measure === measure) return null;
+        return prev.measure > measure
+          ? { ...prev, measure: prev.measure - 1 }
+          : prev;
+      });
+      setSelectedNoteId(null);
+      useEditorScore();
+    },
+    [measureCount, rememberHistory, useEditorScore],
+  );
+
+  const addBarBelow = React.useCallback(
+    (measure: number) => {
+      const nextCount = Math.min(128, measureCount + 1);
+      if (nextCount === measureCount) return;
+      rememberHistory(notesRef.current);
+      setMeasureCount(nextCount);
+      setNotes((prev) =>
+        prev.map((n) =>
+          n.measure > measure ? { ...n, measure: n.measure + 1 } : n,
+        ),
+      );
+      setBarNames((prev) => {
+        const draft = [...prev];
+        draft.splice(measure + 1, 0, `Bar ${measure + 2}`);
+        return draft;
+      });
+      setBarGroups((prev) =>
+        prev.map((g) => ({
+          ...g,
+          bars: g.bars.map((b) => (b > measure ? b + 1 : b)),
+        })),
+      );
+      setActiveSidebarBar(Math.min(nextCount - 1, measure + 1));
+      useEditorScore();
+    },
+    [measureCount, rememberHistory, useEditorScore],
+  );
+
+  const pasteCopiedBarTo = React.useCallback(
+    (targetMeasure: number) => {
+      const sourceMeasure = sidebarCopyMeasureRef.current ?? activeSidebarBar;
+      if (sourceMeasure < 0 || sourceMeasure >= measureCount) return;
+      const nextCount = Math.min(128, measureCount + 1);
+      if (nextCount === measureCount) return;
+
+      rememberHistory(notesRef.current);
+      setMeasureCount(nextCount);
+      setNotes((prev) => {
+        const shifted = prev.map((n) =>
+          n.measure > targetMeasure ? { ...n, measure: n.measure + 1 } : n,
+        );
+        const cloned = prev
+          .filter((n) => n.measure === sourceMeasure)
+          .map((n) => ({
+            ...n,
+            id: `n-${Math.random().toString(36).slice(2, 10)}`,
+            measure: targetMeasure + 1,
+          }));
+        return [...shifted, ...cloned].sort((a, b) => {
+          if (a.measure !== b.measure) return a.measure - b.measure;
+          if (a.beat !== b.beat) return a.beat - b.beat;
+          return a.string - b.string;
+        });
+      });
+      setBarNames((prev) => {
+        const draft = [...prev];
+        const name = prev[sourceMeasure] ?? `Bar ${sourceMeasure + 1}`;
+        draft.splice(targetMeasure + 1, 0, `${name} Copy`);
+        return draft;
+      });
+      setBarGroups((prev) =>
+        prev.map((g) => ({
+          ...g,
+          bars: g.bars.flatMap((b) => {
+            if (b === sourceMeasure) {
+              const shifted =
+                sourceMeasure > targetMeasure
+                  ? sourceMeasure + 1
+                  : sourceMeasure;
+              return [shifted, targetMeasure + 1];
+            }
+            return b > targetMeasure ? [b + 1] : [b];
+          }),
+        })),
+      );
+      setActiveSidebarBar(Math.min(nextCount - 1, targetMeasure + 1));
+      setSelectedCell((prev) => {
+        if (!prev) return prev;
+        return prev.measure > targetMeasure
+          ? { ...prev, measure: prev.measure + 1 }
+          : prev;
+      });
+      useEditorScore();
+    },
+    [activeSidebarBar, measureCount, rememberHistory, useEditorScore],
+  );
+
+  // ── DnD measure reorder ────────────────────────────
+
+  const applyMeasureOrder = React.useCallback(
+    (order: number[], groups: SidebarGroup[]) => {
+      if (order.length !== measureCount) return;
+      const identity = order.every((v, i) => v === i);
+      const indexMap = new Map<number, number>(
+        order.map((old, next) => [old, next]),
+      );
+      const mappedGroups = groups
+        .map((g) => ({
+          ...g,
+          bars: g.bars
+            .map((b) => indexMap.get(b))
+            .filter((b): b is number => b != null),
+        }))
+        .map((g) => ({ ...g, bars: Array.from(new Set(g.bars)) }));
+
+      setBarGroups(mappedGroups);
+      setSelectedSidebarBars((prev) =>
+        Array.from(
+          new Set(
+            prev
+              .map((b) => indexMap.get(b))
+              .filter((b): b is number => b != null),
+          ),
+        ),
+      );
+      setActiveSidebarBar((prev) => indexMap.get(prev) ?? prev);
+      setSelectedCell((prev) =>
+        prev
+          ? { ...prev, measure: indexMap.get(prev.measure) ?? prev.measure }
+          : prev,
+      );
+      selectionAnchorRef.current =
+        indexMap.get(selectionAnchorRef.current) ?? selectionAnchorRef.current;
+
+      if (activeSidebarGroupId) {
+        const still = mappedGroups.some((g) => g.id === activeSidebarGroupId);
+        if (!still) setActiveSidebarGroupId(null);
+      }
+
+      if (identity) return;
+      rememberHistory(notesRef.current);
+      setBarNames((prev) => order.map((old, i) => prev[old] ?? `Bar ${i + 1}`));
+      setNotes((prev) =>
+        prev.map((n) => ({
+          ...n,
+          measure: indexMap.get(n.measure) ?? n.measure,
+        })),
+      );
+      useEditorScore();
+    },
+    [
+      activeSidebarGroupId,
+      measureCount,
+      rememberHistory,
+      useEditorScore,
+      setSelectedCell,
+    ],
+  );
+
+  const handleBarDragEnd = React.useCallback(
+    (event: DragEndEvent) => {
+      const activeId = String(event.active.id);
+      const overId = String(event.over?.id ?? "");
+      if (!activeId || !overId || activeId === overId) return;
+
+      if (activeId.startsWith("group:") && overId.startsWith("group:")) {
+        const aGroup = activeId.replace("group:", "");
+        const oGroup = overId.replace("group:", "");
+        const from = barGroups.findIndex((g) => g.id === aGroup);
+        const to = barGroups.findIndex((g) => g.id === oGroup);
+        if (from < 0 || to < 0) return;
+        const nextGroups = arrayMove(barGroups, from, to);
+        const groupedBars = new Set(nextGroups.flatMap((g) => g.bars));
+        const ungrouped = Array.from(
+          { length: measureCount },
+          (_, i) => i,
+        ).filter((b) => !groupedBars.has(b));
+        setActiveSidebarGroupId(aGroup);
+        applyMeasureOrder(
+          [...ungrouped, ...nextGroups.flatMap((g) => g.bars)],
+          nextGroups,
+        );
+        return;
+      }
+
+      if (!activeId.startsWith("bar:")) return;
+      const activeMeasure = Number(activeId.replace("bar:", ""));
+      if (Number.isNaN(activeMeasure)) return;
+
+      let toIndex = activeMeasure;
+      let targetGroupId: string | null = null;
+      const groupsWithoutActive = barGroups.map((g) => ({
+        ...g,
+        bars: g.bars.filter((b) => b !== activeMeasure),
+      }));
+
+      if (overId.startsWith("bar:")) {
+        const overMeasure = Number(overId.replace("bar:", ""));
+        if (Number.isNaN(overMeasure)) return;
+        toIndex = overMeasure;
+        const owner = groupsWithoutActive.find((g) =>
+          g.bars.includes(overMeasure),
+        );
+        targetGroupId = owner?.id ?? null;
+      } else if (overId.startsWith("group:")) {
+        targetGroupId = overId.replace("group:", "");
+        const tg = groupsWithoutActive.find((g) => g.id === targetGroupId);
+        if (!tg) return;
+        const lastBar = tg.bars[tg.bars.length - 1];
+        toIndex = lastBar == null ? activeMeasure : lastBar;
+      } else {
+        return;
+      }
+
+      const nextGroups = groupsWithoutActive.map((g) => {
+        if (g.id !== targetGroupId) return g;
+        if (overId.startsWith("bar:")) {
+          const overMeasure = Number(overId.replace("bar:", ""));
+          const insertIdx = g.bars.indexOf(overMeasure);
+          const bars = [...g.bars];
+          if (insertIdx < 0) bars.push(activeMeasure);
+          else bars.splice(insertIdx, 0, activeMeasure);
+          return { ...g, bars };
+        }
+        return { ...g, bars: [...g.bars, activeMeasure] };
+      });
+
+      const order = Array.from({ length: measureCount }, (_, i) => i);
+      const linearOrder = arrayMove(order, activeMeasure, toIndex);
+      setActiveSidebarGroupId(targetGroupId);
+      applyMeasureOrder(linearOrder, nextGroups);
+    },
+    [applyMeasureOrder, barGroups, measureCount],
+  );
+
+  // ── Open saved project ─────────────────────────────
+
+  const openSavedProjectById = React.useCallback(
+    (projectId: string) => {
+      const project = projectList.find((p) => p.id === projectId);
+      if (project) applyProjectSnapshot(project);
+    },
+    [applyProjectSnapshot, projectList],
+  );
+
+  // ── Sidebar keyboard shortcuts ─────────────────────
+
+  React.useEffect(() => {
+    function onRenameShortcut(event: KeyboardEvent) {
+      if (event.key !== "F2" || !sidebarHasFocus) return;
+      const tag = (event.target as HTMLElement | null)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      event.preventDefault();
+      if (activeSidebarGroupId) {
+        startRenameGroup(activeSidebarGroupId);
+        return;
+      }
+      setEditingBar(activeSidebarBar);
+    }
+    window.addEventListener("keydown", onRenameShortcut);
+    return () => window.removeEventListener("keydown", onRenameShortcut);
+  }, [
+    activeSidebarBar,
+    activeSidebarGroupId,
+    sidebarHasFocus,
+    startRenameGroup,
+  ]);
+
+  React.useEffect(() => {
+    function onCopyPaste(event: KeyboardEvent) {
+      if (!sidebarHasFocus || !(event.ctrlKey || event.metaKey)) return;
+      const key = event.key.toLowerCase();
+      if (key === "c") {
+        event.preventDefault();
+        sidebarCopyMeasureRef.current = activeSidebarBar;
+      }
+      if (key === "v") {
+        event.preventDefault();
+        pasteCopiedBarTo(activeSidebarBar);
+      }
+    }
+    window.addEventListener("keydown", onCopyPaste);
+    return () => window.removeEventListener("keydown", onCopyPaste);
+  }, [activeSidebarBar, pasteCopiedBarTo, sidebarHasFocus]);
+
+  React.useEffect(() => {
+    function onDelete(event: KeyboardEvent) {
+      if (
+        !sidebarHasFocus ||
+        !(event.key === "Backspace" || event.key === "Delete")
+      )
+        return;
+      const tag = (event.target as HTMLElement | null)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      event.preventDefault();
+
+      if (selectedSidebarItemKeys.length > 1) {
+        deleteSidebarSelection(selectedSidebarItemKeys);
+        return;
+      }
+      const parts = activeSidebarItemKey.split(":");
+      const kind = parts[0] ?? "";
+      if (kind === "bar") {
+        const m = Number(parts[1]);
+        if (!Number.isFinite(m)) return;
+        if (notesRef.current.some((n) => n.measure === m)) clearMeasureAt(m);
+        else deleteMeasureAt(m);
+        return;
+      }
+      deleteSidebarSelection([activeSidebarItemKey]);
+    }
+    window.addEventListener("keydown", onDelete);
+    return () => window.removeEventListener("keydown", onDelete);
+  }, [
+    activeSidebarItemKey,
+    clearMeasureAt,
+    deleteSidebarSelection,
+    deleteMeasureAt,
+    selectedSidebarItemKeys,
+    sidebarHasFocus,
+  ]);
+
+  // ── Derived project name ───────────────────────────
+
+  const projectDisplayName = React.useMemo(() => {
+    const trimmed = title.trim();
+    return trimmed.length > 0 ? trimmed : "Untitled Studio Project";
+  }, [title]);
+
+  const batchTargetNoteCount = React.useMemo(
+    () => resolveBatchTargetNoteIds(batchEditTargetKeys).length,
+    [batchEditTargetKeys, resolveBatchTargetNoteIds],
+  );
+
+  // ── Persistence: load + autosave ───────────────────
+
+  React.useEffect(() => {
+    let canceled = false;
+    async function loadProjects() {
+      if (typeof window === "undefined") return;
+      try {
+        const projects = await getAllStudioProjects();
+        if (canceled) return;
+        setProjectList(projects);
+        if (projects.length > 0) applyProjectSnapshot(projects[0]);
+      } catch {
+        setAlphaStatus("Unable to load saved projects");
+      } finally {
+        autosaveReadyRef.current = true;
+      }
+    }
+    void loadProjects();
+    return () => {
+      canceled = true;
+    };
+  }, [applyProjectSnapshot, setAlphaStatus]);
+
+  React.useEffect(() => {
+    if (!autosaveReadyRef.current || typeof window === "undefined") return;
+    const timeout = window.setTimeout(async () => {
+      const snapshot: StudioProjectSnapshot = {
+        id: currentProjectId,
+        name: projectDisplayName,
+        updatedAt: Date.now(),
+        title,
+        measureCount,
+        beatsPerMeasure,
+        timeSignatureNumerator,
+        tempo,
+        cellWidth,
+        stringTuning,
+        defaultDuration,
+        barNames,
+        barGroups,
+        notes,
+      };
+      try {
+        await saveStudioProject(snapshot);
+        const projects = await getAllStudioProjects();
+        setProjectList(projects);
+      } catch {
+        setAlphaStatus("Autosave failed");
+      }
+    }, 500);
+    return () => clearTimeout(timeout);
+  }, [
+    beatsPerMeasure,
+    barNames,
+    barGroups,
+    cellWidth,
+    currentProjectId,
+    defaultDuration,
+    measureCount,
+    notes,
+    projectDisplayName,
+    stringTuning,
+    tempo,
+    timeSignatureNumerator,
+    title,
+    setAlphaStatus,
+  ]);
+
+  // ════════════════════════════════════════════════════
+  // JSX
+  // ════════════════════════════════════════════════════
+
+  return (
+    <main className="relative flex h-dvh min-h-0 w-full flex-col bg-background">
+      {isImporting && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-3 rounded-xl border border-border bg-card p-8 shadow-lg">
+            <svg
+              className="h-8 w-8 animate-spin text-primary"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              />
+            </svg>
+            <p className="text-sm font-medium text-foreground">
+              Importing Guitar Pro file…
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Parsing notes, effects & tuning
+            </p>
+          </div>
+        </div>
+      )}
+
+      <StudioHeader
+        title={title}
+        onChangeTitle={setTitle}
+        notesCount={notes.length}
+        canUndo={canUndo}
+        canRedo={canRedo}
+        onUndo={undo}
+        onRedo={redo}
+        onNewProject={createNewProject}
+        showSidebar={showSidebar}
+        showBottomBar={showBottomBar}
+        showPreview={showPreview}
+        onToggleSidebar={setShowSidebar}
+        onToggleBottomBar={setShowBottomBar}
+        onTogglePreview={setShowPreview}
+        alphaReady={alphaReady}
+        isPlaybackRunning={isPlaybackRunning}
+        onPlayPause={togglePlayback}
+        onStop={stopPlayback}
+        onExportAlphaTex={exportAlphaTex}
+        onImportFile={(file) => {
+          void importGuitarPro(file);
+        }}
+        savedProjects={projectList.map((p) => ({
+          id: p.id,
+          name: p.name,
+          updatedAt: p.updatedAt,
+        }))}
+        onOpenProject={openSavedProjectById}
+      />
+
+      <ResizablePanelGroup direction="horizontal" className="min-h-0 flex-1">
+        {showSidebar ? (
+          <>
+            <ResizablePanel
+              defaultSize={20}
+              minSize={0}
+              maxSize={32}
+              collapsible
+              collapsedSize={0}
+            >
+              <StudioSidebarPanel
+                sidebarRef={sidebarRef}
+                measureCount={measureCount}
+                beatsPerMeasure={beatsPerMeasure}
+                stringTuning={stringTuning}
+                barNames={barNames}
+                notes={notes}
+                noteByCell={noteByCell}
+                barGroups={barGroups}
+                groupIdByBar={groupIdByBar}
+                groupsByParent={groupsByParent}
+                topLevelGroups={topLevelGroups}
+                ungroupedBars={ungroupedBars}
+                sidebarSortableItems={sidebarSortableItems}
+                firstPitchClassByMeasure={firstPitchClassByMeasure}
+                expandedBars={expandedBars}
+                collapsedColumns={collapsedColumns}
+                sidebarHasFocus={sidebarHasFocus}
+                activeSidebarBar={activeSidebarBar}
+                activeSidebarGroupId={activeSidebarGroupId}
+                activeSidebarItemKey={activeSidebarItemKey}
+                selectedSidebarItemKeys={selectedSidebarItemKeys}
+                selectedSidebarBars={selectedSidebarBars}
+                editingBar={editingBar}
+                editingGroupId={editingGroupId}
+                editingGroupName={editingGroupName}
+                batchEditOpen={batchEditOpen}
+                batchEditDraft={batchEditDraft}
+                batchTargetNoteCount={batchTargetNoteCount}
+                sensors={sensors}
+                draggingColumnKey={draggingColumnKey}
+                draggingNoteKey={draggingNoteKey}
+                onSidebarFocusCapture={() => setSidebarHasFocus(true)}
+                onSidebarBlurCapture={(event) => {
+                  const next = event.relatedTarget as Node | null;
+                  if (!event.currentTarget.contains(next))
+                    setSidebarHasFocus(false);
+                }}
+                selectSidebarItem={selectSidebarItem}
+                isSidebarItemSelected={isSidebarItemSelected}
+                onJumpToMeasure={jumpToMeasure}
+                onToggleBarCollapsed={toggleBarCollapsed}
+                onJumpToBarColumnString={jumpToBarColumnString}
+                onSetActiveSidebarBar={setActiveSidebarBar}
+                onSetActiveSidebarGroupId={setActiveSidebarGroupId}
+                onSetSidebarHasFocus={setSidebarHasFocus}
+                onSetSelectedSidebarBars={setSelectedSidebarBars}
+                selectionAnchorRef={selectionAnchorRef}
+                onSetBarNames={setBarNames}
+                onCommitRenameBar={commitRenameBar}
+                onSetEditingBar={setEditingBar}
+                onSetEditingGroupId={setEditingGroupId}
+                onSetEditingGroupName={setEditingGroupName}
+                onAddBarBelow={addBarBelow}
+                onDuplicateMeasureAt={duplicateMeasureAt}
+                onClearMeasureAt={clearMeasureAt}
+                onDeleteMeasureAt={deleteMeasureAt}
+                onCreateGroupFromSelection={createGroupFromSelection}
+                onStartRenameGroup={startRenameGroup}
+                onCommitRenameGroup={commitRenameGroup}
+                onDuplicateGroup={duplicateGroup}
+                onRemoveGroup={removeGroup}
+                onToggleGroupCollapsed={toggleGroupCollapsed}
+                onDeleteSidebarSelection={deleteSidebarSelection}
+                onOpenBatchEditFromKey={openBatchEditFromKey}
+                onSetBatchEditOpen={setBatchEditOpen}
+                onSetBatchEditDraft={setBatchEditDraft}
+                onApplyBatchEdit={applyBatchEditToTargets}
+                onSetCollapsedColumns={setCollapsedColumns}
+                onSetExpandedBars={setExpandedBars}
+                onSetDraggingColumnKey={setDraggingColumnKey}
+                onSetDraggingNoteKey={setDraggingNoteKey}
+                onRememberHistory={rememberHistory}
+                onSetNotes={setNotes}
+                notesRef={notesRef}
+                onUseEditorScore={useEditorScore}
+                onBarDragEnd={handleBarDragEnd}
+                renameInputRef={renameInputRef}
+                groupRenameInputRef={groupRenameInputRef}
+              />
+            </ResizablePanel>
+            <ResizableHandle withHandle />
+          </>
+        ) : null}
+
+        <ResizablePanel defaultSize={showSidebar ? 80 : 100} minSize={66}>
+          <section className="relative h-full min-w-0 overflow-auto p-4">
+            {isPlaybackRunning && (
+              <button
+                type="button"
+                onClick={scrollToPlayhead}
+                className="fixed bottom-6 right-6 z-40 flex items-center gap-2 rounded-full border border-primary/40 bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-lg transition-all hover:bg-primary/90 hover:shadow-xl active:scale-95"
+                aria-label="Scroll to playing position"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polygon points="6 3 20 12 6 21 6 3" />
+                </svg>
+                Scroll to Playhead
+              </button>
+            )}
+
+            {hasActiveSelection ? (
+              <div
+                className={`fixed right-6 z-40 flex items-center gap-2 rounded-xl border border-border/70 bg-card/95 p-2 shadow-lg backdrop-blur ${showBottomBar ? "bottom-16" : "bottom-6"}`}
+              >
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="outline"
+                  onClick={copyCurrentMeasure}
+                  title="Copy Bar"
+                  aria-label="Copy Bar"
+                >
+                  <Copy className="size-4" />
+                </Button>
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="outline"
+                  onClick={pasteToCurrentMeasure}
+                  disabled={!hasCopiedMeasure}
+                  title="Paste Bar"
+                  aria-label="Paste Bar"
+                >
+                  <ClipboardPaste className="size-4" />
+                </Button>
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="outline"
+                  onClick={clearCurrentMeasure}
+                  title="Clear Bar"
+                  aria-label="Clear Bar"
+                >
+                  <Eraser className="size-4" />
+                </Button>
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="outline"
+                  onClick={duplicateCurrentMeasure}
+                  title="Duplicate Bar"
+                  aria-label="Duplicate Bar"
+                >
+                  <CopyPlus className="size-4" />
+                </Button>
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="destructive"
+                  onClick={removeSelectedNote}
+                  disabled={selectedNote === null}
+                  title="Remove Note"
+                  aria-label="Remove Note"
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              </div>
+            ) : null}
+
+            <div className="flex min-h-full flex-col gap-3">
+              <div className="flex items-center justify-between rounded-lg border border-border/70 bg-card/60 px-2 py-1">
+                <div className="flex items-center gap-2">
+                  {!showSidebar ? (
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      className="h-7 w-7"
+                      onClick={() => setShowSidebar(true)}
+                      title="Show Sidebar"
+                      aria-label="Show Sidebar"
+                    >
+                      <PanelLeft className="size-4" />
+                    </Button>
+                  ) : null}
+                  <Badge variant="outline" className="h-6 text-[11px]">
+                    {projectDisplayName}
+                  </Badge>
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  {alphaStatus}
+                </p>
+              </div>
+
+              <div ref={gridContainerRef} className="min-h-0">
+                <StudioGrid
+                  stringTuning={stringTuning}
+                  notes={notes}
+                  noteByCell={noteByCell}
+                  selectedCell={selectedCell}
+                  measureCount={measureCount}
+                  beatsPerMeasure={beatsPerMeasure}
+                  cellWidth={cellWidth}
+                  onSelectCell={addOrSelectCell}
+                  onUpdateNote={updateNoteById}
+                  onRemoveNote={removeNoteById}
+                  onClickRulerBeat={handleClickRulerBeat}
+                />
+              </div>
+
+              {showPreview ? (
+                <div className="min-h-80">
+                  <StudioPreviewPanel
+                    alphaReady={alphaReady}
+                    alphaStatus={alphaStatus}
+                    scoreSource={scoreSource}
+                    alphaTex={alphaTex}
+                    hostRef={alphaHostRef}
+                    isDarkMode={isDarkMode}
+                  />
+                </div>
+              ) : null}
+
+              {showBottomBar ? (
+                <div className="sticky bottom-0 z-30 rounded-lg border border-border/70 bg-card/95 px-2 py-1.5 backdrop-blur">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[11px] text-muted-foreground">
+                        Bars
+                      </span>
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="outline"
+                        className="h-6 w-6"
+                        onClick={() =>
+                          handleChangeMeasureCount(
+                            Math.max(1, measureCount - 1),
+                          )
+                        }
+                      >
+                        -
+                      </Button>
+                      <span className="min-w-5 text-center text-xs font-medium">
+                        {measureCount}
+                      </span>
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="outline"
+                        className="h-6 w-6"
+                        onClick={() =>
+                          handleChangeMeasureCount(
+                            Math.min(64, measureCount + 1),
+                          )
+                        }
+                      >
+                        +
+                      </Button>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[11px] text-muted-foreground">
+                        TS
+                      </span>
+                      <Select
+                        value={String(timeSignatureNumerator)}
+                        onValueChange={(v) =>
+                          handleChangeBeatsPerMeasure(Number(v))
+                        }
+                      >
+                        <SelectTrigger className="h-7 w-[78px] text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {[2, 3, 4, 5, 6, 7, 8, 9, 10, 12].map((b) => (
+                            <SelectItem key={b} value={String(b)}>
+                              {b}/4
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[11px] text-muted-foreground">
+                        Tempo
+                      </span>
+                      <Input
+                        className="h-7 w-[78px] text-xs"
+                        type="number"
+                        min={30}
+                        max={260}
+                        value={tempo}
+                        onChange={(e) =>
+                          setTempo(
+                            Math.max(
+                              30,
+                              Math.min(260, Number(e.target.value) || 96),
+                            ),
+                          )
+                        }
+                      />
+                    </div>
+
+                    <div className="flex min-w-40 items-center gap-1.5">
+                      <span className="text-[11px] text-muted-foreground">
+                        Zoom
+                      </span>
+                      <Input
+                        className="h-7"
+                        type="range"
+                        min={44}
+                        max={88}
+                        value={cellWidth}
+                        onChange={(e) => setCellWidth(Number(e.target.value))}
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[11px] text-muted-foreground">
+                        Duration
+                      </span>
+                      <Select
+                        value={String(selectedDuration)}
+                        onValueChange={(v) =>
+                          updateDuration(Number(v) as NoteDuration)
+                        }
+                      >
+                        <SelectTrigger className="h-7 w-[104px] text-xs">
+                          <SelectValue placeholder="Duration" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">Whole</SelectItem>
+                          <SelectItem value="2">Half</SelectItem>
+                          <SelectItem value="4">Quarter</SelectItem>
+                          <SelectItem value="8">Eighth</SelectItem>
+                          <SelectItem value="16">Sixteenth</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="flex min-w-48 flex-1 items-center gap-1.5">
+                      <span className="text-[11px] text-muted-foreground">
+                        Playhead
+                      </span>
+                      <Input
+                        type="range"
+                        min={0}
+                        max={Math.max(0, totalBeats - 1)}
+                        value={Math.min(
+                          playheadBeat,
+                          Math.max(0, totalBeats - 1),
+                        )}
+                        onChange={(e) =>
+                          setPlayheadBeat(Number(e.target.value))
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </section>
+        </ResizablePanel>
+      </ResizablePanelGroup>
+    </main>
+  );
+}

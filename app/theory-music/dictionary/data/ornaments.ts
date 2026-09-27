@@ -1,0 +1,445 @@
+// ════════════════════════════════════════════════════════
+// Dictionary Data – Ornaments, Tuplets, Tremolo, Grace Notes, Fermata
+// ════════════════════════════════════════════════════════
+
+import type { DictionaryEntry } from "../types";
+
+export const ORNAMENT_ENTRIES: DictionaryEntry[] = [
+  // ── Turn ─────────────────────────────────────────────
+  {
+    id: "turn",
+    term: "Turn",
+    termId: "Turn / Gruppetto",
+    aliases: ["Gruppetto"],
+    category: "ornament",
+    subCategory: "turn",
+    instrumentContext: "general",
+    shortDefinition: "Ornamen empat not: atas–utama–bawah–utama.",
+    detailedDefinition:
+      "Turn (gruppetto) adalah ornamen yang memainkan urutan: not di atas nada utama → nada utama → not di bawah → nada utama. Menghasilkan hiasan melodis yang elegan. Pada gitar, bisa dilakukan dengan hammer-on dan pull-off yang terkoordinasi.",
+    alphaTexRef: { token: "turn", level: "note" },
+    relatedTerms: ["inverted-turn", "trill", "mordent"],
+    guitarTechnique: {
+      howTo:
+        "Dari nada utama: hammer-on ke fret atas → pull-off kembali → pull-off ke fret bawah → hammer-on kembali ke nada utama. Semua dalam satu alur cepat.",
+      hand: "left",
+      difficulty: "intermediate",
+    },
+    tags: ["turn", "gruppetto", "ornament"],
+    sortOrder: 0,
+  },
+  {
+    id: "inverted-turn",
+    term: "Inverted Turn",
+    termId: "Turn terbalik",
+    aliases: ["iturn"],
+    category: "ornament",
+    subCategory: "turn",
+    instrumentContext: "general",
+    shortDefinition: "Ornamen empat not: bawah–utama–atas–utama.",
+    detailedDefinition:
+      "Inverted turn kebalikan dari turn normal: not di bawah nada utama → nada utama → not di atas → nada utama. Lebih jarang dipakai tapi memberi warna yang berbeda.",
+    alphaTexRef: { token: "iturn", level: "note" },
+    relatedTerms: ["turn", "trill"],
+    tags: ["inverted turn", "iturn"],
+    sortOrder: 1,
+  },
+
+  // ── Mordent ──────────────────────────────────────────
+  {
+    id: "upper-mordent",
+    term: "Upper Mordent",
+    termId: "Mordent atas",
+    aliases: ["Mordent", "umordent"],
+    category: "ornament",
+    subCategory: "trill-mordent",
+    instrumentContext: "general",
+    shortDefinition: "Ornamen cepat: utama–atas–utama.",
+    detailedDefinition:
+      "Upper mordent (pralltriller) adalah ornamen singkat: nada utama → nada satu step di atas → kembali ke nada utama. Dilakukan sangat cepat, seperti 'gigitan' di awal nada. Simbol: garis zig-zag.",
+    alphaTexRef: { token: "umordent", level: "note" },
+    relatedTerms: ["lower-mordent", "trill", "turn"],
+    guitarTechnique: {
+      howTo:
+        "Petik nada utama → hammer-on cepat ke fret 1 atau 2 di atas → pull-off kembali. Semua terjadi sangat cepat di awal beat.",
+      hand: "left",
+      difficulty: "intermediate",
+    },
+    tags: ["mordent", "upper mordent", "umordent", "pralltriller"],
+    sortOrder: 0,
+  },
+  {
+    id: "lower-mordent",
+    term: "Lower Mordent",
+    termId: "Mordent bawah",
+    aliases: ["Inverted mordent", "lmordent"],
+    category: "ornament",
+    subCategory: "trill-mordent",
+    instrumentContext: "general",
+    shortDefinition: "Ornamen cepat: utama–bawah–utama.",
+    detailedDefinition:
+      "Lower mordent memainkan nada utama → nada satu step di bawah → kembali ke nada utama. Simbol: garis zig-zag dengan garis vertikal di tengahnya.",
+    alphaTexRef: { token: "lmordent", level: "note" },
+    relatedTerms: ["upper-mordent", "turn"],
+    guitarTechnique: {
+      howTo:
+        "Petik nada utama → pull-off cepat ke fret 1 atau 2 di bawah → hammer-on kembali.",
+      hand: "left",
+      difficulty: "intermediate",
+    },
+    tags: ["lower mordent", "lmordent", "inverted mordent"],
+    sortOrder: 1,
+  },
+
+  // ── Tuplets ──────────────────────────────────────────
+  {
+    id: "tuplet",
+    term: "Tuplet",
+    termId: "Tuplet",
+    category: "ornament",
+    subCategory: "tuplets",
+    instrumentContext: "general",
+    shortDefinition: "Grup not yang membagi beat secara tidak biasa.",
+    detailedDefinition:
+      "Tuplet adalah pembagian ritmis di mana sejumlah not dimainkan dalam ruang yang biasanya ditempati jumlah not berbeda. Contoh: triplet = 3 not dalam ruang 2 not biasa. Jenis: triplet (3), quintuplet (5), sextuplet (6), septuplet (7).",
+    relatedTerms: ["triplet", "quintuplet", "subdivision"],
+    tags: ["tuplet", "irregular division"],
+    sortOrder: 0,
+  },
+  {
+    id: "triplet",
+    term: "Triplet",
+    termId: "Triplet / Triol",
+    aliases: ["Triol"],
+    category: "ornament",
+    subCategory: "tuplets",
+    instrumentContext: "general",
+    shortDefinition: "3 not dalam ruang yang biasanya ditempati 2 not.",
+    detailedDefinition:
+      "Triplet membagi satu beat menjadi 3 bagian yang sama rata alih-alih 2. Triplet eighth notes: 3 eighth notes di ruang 1 quarter note. Memberikan feel 'swing' atau 'waltz'. Sangat fundamental di jazz, blues, dan 6/8 feel.",
+    alphaTexRef: { token: "tp 3", level: "beat" },
+    relatedTerms: ["tuplet", "swing", "shuffle"],
+    guitarTechnique: {
+      howTo:
+        "Hitunglah '1-trip-let, 2-trip-let' untuk merasakan pembagian 3. Petik 3 not yang merata dalam satu beat. Latih dengan metronome.",
+      hand: "both",
+      difficulty: "beginner",
+    },
+    tags: ["triplet", "triol", "3", "swing"],
+    sortOrder: 1,
+  },
+  {
+    id: "quintuplet",
+    term: "Quintuplet",
+    termId: "Kuintuplet",
+    category: "ornament",
+    subCategory: "tuplets",
+    instrumentContext: "general",
+    shortDefinition: "5 not dalam ruang yang biasanya ditempati 4 not.",
+    detailedDefinition:
+      "Quintuplet membagi ruang 1 beat (atau 2 beat) menjadi 5 bagian sama rata. Lebih jarang dari triplet tetapi memberikan feel yang unik — sering terdengar di progressive rock/metal dan musik klasik.",
+    alphaTexRef: { token: "tp 5", level: "beat" },
+    relatedTerms: ["tuplet", "triplet"],
+    tags: ["quintuplet", "5", "five"],
+    sortOrder: 2,
+  },
+  {
+    id: "sextuplet",
+    term: "Sextuplet",
+    termId: "Sekstuplet",
+    category: "ornament",
+    subCategory: "tuplets",
+    instrumentContext: "general",
+    shortDefinition: "6 not dalam ruang yang biasanya ditempati 4 not.",
+    detailedDefinition:
+      "Sextuplet membagi beat menjadi 6 bagian sama rata. Bisa dianggap sebagai 2 triplet berturut-turut. Sangat umum di shred guitar dan classical passage cepat.",
+    alphaTexRef: { token: "tp 6", level: "beat" },
+    relatedTerms: ["tuplet", "triplet"],
+    guitarTechnique: {
+      howTo:
+        "Mainkan 6 not per beat. Bisa dikelompokkan 3+3 atau 2+2+2 untuk membantu timing.",
+      hand: "both",
+      difficulty: "intermediate",
+    },
+    tags: ["sextuplet", "6", "six"],
+    sortOrder: 3,
+  },
+  {
+    id: "septuplet",
+    term: "Septuplet",
+    termId: "Septuplet",
+    category: "ornament",
+    subCategory: "tuplets",
+    instrumentContext: "general",
+    shortDefinition:
+      "7 not dalam ruang yang biasanya ditempati 4 (atau 8) not.",
+    detailedDefinition:
+      "Septuplet membagi ruang menjadi 7 bagian sama rata. Sangat jarang dan menantang. Memberikan feel yang 'floating' dan tidak biasa.",
+    alphaTexRef: { token: "tp 7", level: "beat" },
+    relatedTerms: ["tuplet", "quintuplet"],
+    tags: ["septuplet", "7", "seven"],
+    sortOrder: 4,
+  },
+
+  // ── Tremolo ──────────────────────────────────────────
+  {
+    id: "tremolo",
+    term: "Tremolo",
+    termId: "Tremolo",
+    category: "ornament",
+    subCategory: "tremolo",
+    instrumentContext: "general",
+    shortDefinition: "Pengulangan cepat satu not atau alternasi dua not.",
+    detailedDefinition:
+      "Tremolo dalam notasi ditandai dengan garis miring (slash) melintasi stem. Satu slash = eighth-note tremolo, dua = sixteenth, tiga = thirty-second. Pada gitar, tremolo picking berarti alternate picking yang sangat cepat pada satu not. Berbeda dari tremolo bar yang mengubah pitch.",
+    relatedTerms: ["tremolo-1", "tremolo-2", "tremolo-3"],
+    tags: ["tremolo", "rapid", "repetition"],
+    sortOrder: 0,
+  },
+  {
+    id: "tremolo-1",
+    term: "Tremolo (1 Slash)",
+    termId: "Tremolo 1 garis",
+    category: "ornament",
+    subCategory: "tremolo",
+    instrumentContext: "general",
+    shortDefinition: "Tremolo dengan subdivisi eighth note.",
+    detailedDefinition:
+      "Satu slash pada stem menginstruksikan tremolo dengan subdivisi eighth note — setiap not diulang dalam pola eighth note. Contoh: whole note dengan 1 slash = 8 eighth notes.",
+    alphaTexRef: { token: "tr 1", level: "beat" },
+    relatedTerms: ["tremolo", "tremolo-2"],
+    tags: ["tremolo 1", "single slash"],
+    sortOrder: 1,
+  },
+  {
+    id: "tremolo-2",
+    term: "Tremolo (2 Slash)",
+    termId: "Tremolo 2 garis",
+    category: "ornament",
+    subCategory: "tremolo",
+    instrumentContext: "general",
+    shortDefinition: "Tremolo dengan subdivisi sixteenth note.",
+    detailedDefinition:
+      "Dua slash pada stem = tremolo dengan subdivisi sixteenth. Quarter note dengan 2 slash = 4 sixteenth notes yang diulang.",
+    alphaTexRef: { token: "tr 2", level: "beat" },
+    relatedTerms: ["tremolo", "tremolo-1", "tremolo-3"],
+    tags: ["tremolo 2", "double slash"],
+    sortOrder: 2,
+  },
+  {
+    id: "tremolo-3",
+    term: "Tremolo (3 Slash)",
+    termId: "Tremolo 3 garis",
+    category: "ornament",
+    subCategory: "tremolo",
+    instrumentContext: "general",
+    shortDefinition: "Tremolo dengan subdivisi thirty-second note.",
+    detailedDefinition:
+      "Tiga slash pada stem = tremolo paling cepat yang umum. Biasanya terdengar sebagai buzz/roll tanpa not individual yang jelas terpisah.",
+    alphaTexRef: { token: "tr 3", level: "beat" },
+    relatedTerms: ["tremolo", "tremolo-2"],
+    guitarTechnique: {
+      howTo:
+        "Alternate pick secepat mungkin. Gerakan harus dari pergelangan, bukan siku. Jaga pick grip ringan untuk speed.",
+      hand: "right",
+      difficulty: "intermediate",
+    },
+    tags: ["tremolo 3", "triple slash", "buzz"],
+    sortOrder: 3,
+  },
+
+  // ── Grace Notes ──────────────────────────────────────
+  {
+    id: "grace-note",
+    term: "Grace Note",
+    termId: "Grace note / Appoggiatura",
+    category: "ornament",
+    subCategory: "grace-note",
+    instrumentContext: "general",
+    shortDefinition: "Not ornamen kecil sebelum atau pada beat utama.",
+    detailedDefinition:
+      "Grace note adalah not hias yang dimainkan sangat cepat menuju not utama. Ada dua jenis: before-beat (acciaccatura) yang tidak mengambil waktu dari beat, dan on-beat (appoggiatura) yang mengambil sebagian waktu dari not utama.",
+    relatedTerms: ["grace-before-beat", "grace-on-beat"],
+    tags: ["grace note", "ornament", "appoggiatura", "acciaccatura"],
+    sortOrder: 0,
+  },
+  {
+    id: "grace-before-beat",
+    term: "Grace Note (Before Beat)",
+    termId: "Grace note sebelum beat",
+    aliases: ["Acciaccatura", "bb"],
+    category: "ornament",
+    subCategory: "grace-note",
+    instrumentContext: "general",
+    shortDefinition: "Grace note yang dimainkan sebelum beat utama.",
+    detailedDefinition:
+      "Acciaccatura (slashed grace note) dimainkan secepat mungkin tepat sebelum beat utama. Tidak mengambil waktu dari beat — beat utama tetap jatuh tepat pada posisinya. Pada tab, biasanya ditandai not kecil dengan slash.",
+    alphaTexRef: { token: "gr bb", level: "beat" },
+    relatedTerms: ["grace-on-beat", "hammer-on"],
+    guitarTechnique: {
+      howTo:
+        "Pukul/petik grace note sebelum beat lalu segera pindah ke not utama tepat saat beat tiba. Biasanya menggunakan hammer-on atau pull-off.",
+      hand: "both",
+      difficulty: "intermediate",
+    },
+    tags: ["grace note", "before beat", "bb", "acciaccatura"],
+    sortOrder: 1,
+  },
+  {
+    id: "grace-on-beat",
+    term: "Grace Note (On Beat)",
+    termId: "Grace note pada beat",
+    aliases: ["Appoggiatura", "ob"],
+    category: "ornament",
+    subCategory: "grace-note",
+    instrumentContext: "general",
+    shortDefinition: "Grace note yang dimainkan pada beat utama.",
+    detailedDefinition:
+      "Appoggiatura (on-beat grace note) dimainkan tepat pada beat dan mengambil sebagian durasi dari not utama. Memberi efek 'leaning' yang lebih ekspresif dibanding before-beat grace.",
+    alphaTexRef: { token: "gr ob", level: "beat" },
+    relatedTerms: ["grace-before-beat"],
+    tags: ["grace note", "on beat", "ob", "appoggiatura"],
+    sortOrder: 2,
+  },
+
+  // ── Fermata ──────────────────────────────────────────
+  {
+    id: "fermata",
+    term: "Fermata",
+    termId: "Fermata / Corona",
+    aliases: ["Hold", "Pause", "Corona"],
+    category: "ornament",
+    subCategory: "grace-note",
+    instrumentContext: "general",
+    shortDefinition: "Tanda untuk menahan not lebih lama dari durasinya.",
+    detailedDefinition:
+      "Fermata (simbol mata dengan titik) menginstruksikan pemain untuk menahan not/istirahat selama yang diinginkan — lebih lama dari durasi tertulis. Ada 3 tingkat: short (sedikit lebih lama), medium (standar), long (jauh lebih lama). Conductor atau pemain menentukan durasinya.",
+    relatedTerms: ["fermata-short", "fermata-medium", "fermata-long"],
+    tags: ["fermata", "corona", "hold", "pause", "tahan"],
+    sortOrder: 0,
+  },
+  {
+    id: "fermata-short",
+    term: "Short Fermata",
+    termId: "Fermata pendek",
+    category: "ornament",
+    subCategory: "grace-note",
+    instrumentContext: "general",
+    shortDefinition: "Fermata dengan penahanan singkat.",
+    detailedDefinition:
+      "Short fermata menahan not sedikit lebih lama dari durasi tertulis — umumnya sekitar 1.5× durasi asli.",
+    alphaTexRef: { token: "fermata short", level: "beat" },
+    relatedTerms: ["fermata", "fermata-medium"],
+    tags: ["fermata", "short fermata"],
+    sortOrder: 1,
+  },
+  {
+    id: "fermata-medium",
+    term: "Medium Fermata",
+    termId: "Fermata sedang",
+    category: "ornament",
+    subCategory: "grace-note",
+    instrumentContext: "general",
+    shortDefinition: "Fermata standar.",
+    detailedDefinition:
+      "Medium fermata adalah durasi fermata paling umum — menahan not sekitar 2× durasi asli. Ini yang dimaksud ketika tidak ada kualifikasi khusus.",
+    alphaTexRef: { token: "fermata medium", level: "beat" },
+    relatedTerms: ["fermata", "fermata-short", "fermata-long"],
+    tags: ["fermata", "medium fermata"],
+    sortOrder: 2,
+  },
+  {
+    id: "fermata-long",
+    term: "Long Fermata",
+    termId: "Fermata panjang",
+    category: "ornament",
+    subCategory: "grace-note",
+    instrumentContext: "general",
+    shortDefinition: "Fermata dengan penahanan panjang.",
+    detailedDefinition:
+      "Long fermata menahan not jauh lebih lama dari durasi tertulis — bisa 3× atau lebih. Sering dipakai pada akhir bagian atau sebelum transisi dramatis.",
+    alphaTexRef: { token: "fermata long", level: "beat" },
+    relatedTerms: ["fermata", "fermata-medium"],
+    tags: ["fermata", "long fermata"],
+    sortOrder: 3,
+  },
+
+  // ── Ottava / Octave Shift ────────────────────────────
+  {
+    id: "ottava-8va",
+    term: "8va (Ottava Alta)",
+    termId: "8va / Satu oktaf lebih tinggi",
+    category: "notation",
+    subCategory: "note-values",
+    instrumentContext: "general",
+    shortDefinition: "Mainkan satu oktaf lebih tinggi dari tertulis.",
+    detailedDefinition:
+      "8va (ottava alta) menginstruksikan pemain untuk memainkan passage satu oktaf lebih tinggi dari yang tertulis. Digunakan untuk menghindari terlalu banyak ledger lines di atas staff.",
+    alphaTexRef: { token: "8va", level: "beat" },
+    relatedTerms: ["ottava-8vb", "octave"],
+    tags: ["8va", "ottava", "octave up"],
+    sortOrder: 0,
+  },
+  {
+    id: "ottava-8vb",
+    term: "8vb (Ottava Bassa)",
+    termId: "8vb / Satu oktaf lebih rendah",
+    category: "notation",
+    subCategory: "note-values",
+    instrumentContext: "general",
+    shortDefinition: "Mainkan satu oktaf lebih rendah dari tertulis.",
+    detailedDefinition:
+      "8vb (ottava bassa) menginstruksikan pemain untuk memainkan satu oktaf lebih rendah. Digunakan untuk menghindari terlalu banyak ledger lines di bawah staff.",
+    alphaTexRef: { token: "8vb", level: "beat" },
+    relatedTerms: ["ottava-8va", "octave"],
+    tags: ["8vb", "ottava bassa", "octave down"],
+    sortOrder: 1,
+  },
+  {
+    id: "ottava-15ma",
+    term: "15ma (Quindicesima Alta)",
+    termId: "15ma / Dua oktaf lebih tinggi",
+    category: "notation",
+    subCategory: "note-values",
+    instrumentContext: "general",
+    shortDefinition: "Mainkan dua oktaf lebih tinggi dari tertulis.",
+    detailedDefinition:
+      "15ma menginstruksikan pemain untuk memainkan passage dua oktaf lebih tinggi dari yang tertulis.",
+    alphaTexRef: { token: "15ma", level: "beat" },
+    relatedTerms: ["ottava-8va"],
+    tags: ["15ma", "two octaves up"],
+    sortOrder: 2,
+  },
+  {
+    id: "ottava-15mb",
+    term: "15mb (Quindicesima Bassa)",
+    termId: "15mb / Dua oktaf lebih rendah",
+    category: "notation",
+    subCategory: "note-values",
+    instrumentContext: "general",
+    shortDefinition: "Mainkan dua oktaf lebih rendah dari tertulis.",
+    detailedDefinition:
+      "15mb menginstruksikan pemain untuk memainkan passage dua oktaf lebih rendah.",
+    alphaTexRef: { token: "15mb", level: "beat" },
+    relatedTerms: ["ottava-8vb"],
+    tags: ["15mb", "two octaves down"],
+    sortOrder: 3,
+  },
+
+  // ── Slashed Grace Beat ───────────────────────────────
+  {
+    id: "slashed-beat",
+    term: "Slashed Beat",
+    termId: "Beat slash",
+    category: "notation",
+    subCategory: "note-values",
+    instrumentContext: "general",
+    shortDefinition: "Beat ditulis sebagai slash — biasanya rhythm indication.",
+    detailedDefinition:
+      "Slashed beat menunjukkan beat ritmis tanpa pitch spesifik (biasanya 'repeat chord sebelumnya' atau 'improvisasi'). Sering dipakai di chart jazz dan pop untuk menandai groove tanpa menuliskan setiap nada.",
+    alphaTexRef: { token: "slashed", level: "beat" },
+    relatedTerms: ["rhythm"],
+    tags: ["slash", "slashed", "rhythm slash"],
+    sortOrder: 4,
+  },
+];

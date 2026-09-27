@@ -1,0 +1,15 @@
+[
+  {
+    "term": "Dummy",
+    "termId": "Dummy",
+    "category": "rhythm",
+    "subCategory": "rhythm-general",
+    "instrumentContext": "guitar",
+    "shortDefinition": "Dummy Dummy",
+    "detailedDefinition": "DummyDummyDummyDummy",
+    "examples": [
+      "Dummy"
+    ],
+    "id": "dummy"
+  }
+]

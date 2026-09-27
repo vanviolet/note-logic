@@ -1,0 +1,714 @@
+export interface MusicDictionaryEntry {
+  term: string;
+  aliases?: string[];
+  category:
+    | "pitch"
+    | "interval"
+    | "scale"
+    | "chord"
+    | "harmony"
+    | "rhythm"
+    | "form"
+    | "analysis"
+    | "notation"
+    | "audio";
+  shortDefinition: string;
+  detailedDefinition: string;
+  examples?: string[];
+  relatedTerms?: string[];
+}
+
+export const MUSIC_DICTIONARY: Record<string, MusicDictionaryEntry> = {
+  pitch: {
+    term: "Pitch",
+    category: "pitch",
+    shortDefinition: "Tinggi-rendahnya bunyi secara musikal.",
+    detailedDefinition:
+      "Pitch adalah persepsi tinggi-rendah nada yang terutama ditentukan oleh frekuensi dasar suara. Dalam teori musik, pitch dipakai untuk menamai nada (C, D, E, dst), membentuk interval, chord, dan melodi.",
+    examples: ["A4 = 440 Hz", "C4 disebut middle C"],
+    relatedTerms: ["frequency", "note", "pitch class", "octave"],
+  },
+  frequency: {
+    term: "Frequency",
+    category: "audio",
+    shortDefinition: "Jumlah getaran per detik (Hz).",
+    detailedDefinition:
+      "Frequency adalah ukuran fisik sinyal suara, dinyatakan dalam Hertz (Hz). Semakin tinggi frekuensi, semakin tinggi pitch yang terdengar. Rasio frekuensi juga menentukan interval musikal.",
+    examples: ["220 Hz = A3", "440 Hz = A4", "880 Hz = A5"],
+    relatedTerms: ["pitch", "harmonic", "timbre"],
+  },
+  note: {
+    term: "Note",
+    aliases: ["Nada"],
+    category: "notation",
+    shortDefinition: "Satuan nada dalam notasi musik.",
+    detailedDefinition:
+      "Note dapat merujuk ke pitch tertentu (mis. C#4), simbol notasi, atau event musik pada waktu tertentu. Dalam konteks harmoni, note adalah blok dasar pembentuk interval, chord, dan scale.",
+    relatedTerms: ["pitch", "accidental", "octave", "scale degree"],
+  },
+  accidental: {
+    term: "Accidental",
+    aliases: ["Kromatis", "Tanda kromatis"],
+    category: "notation",
+    shortDefinition: "Tanda perubahan nada (♯, ♭, ♮, 𝄪, 𝄫).",
+    detailedDefinition:
+      "Accidental mengubah pitch note dari posisi naturalnya. Sharp menaikkan semitone, flat menurunkan semitone, natural mengembalikan ke nada asli di konteks notasi.",
+    examples: ["F menjadi F#", "B menjadi Bb"],
+    relatedTerms: ["enharmonic", "key signature", "chromatic"],
+  },
+  octave: {
+    term: "Octave",
+    category: "interval",
+    shortDefinition: "Jarak 12 semitone antara dua nada sejenis.",
+    detailedDefinition:
+      "Octave adalah interval ketika frekuensi nada atas = 2× frekuensi nada bawah. Dua nada yang berjarak satu oktaf dianggap memiliki nama pitch class yang sama, hanya register berbeda.",
+    relatedTerms: ["semitone", "pitch class", "register"],
+  },
+  semitone: {
+    term: "Semitone",
+    aliases: ["Half step", "Setengah nada"],
+    category: "interval",
+    shortDefinition: "Jarak interval terkecil dalam sistem 12-TET.",
+    detailedDefinition:
+      "Semitone adalah langkah terkecil umum pada tuning equal temperament 12 nada. Dua semitone = satu tone (whole step). Semitone dipakai untuk menghitung interval, formula scale, dan formula chord.",
+    examples: ["C ke C# = 1 semitone", "E ke F = 1 semitone"],
+    relatedTerms: ["whole tone", "interval", "chromatic"],
+  },
+  wholeTone: {
+    term: "Whole Tone",
+    aliases: ["Tone", "Whole step"],
+    category: "interval",
+    shortDefinition: "Interval 2 semitone.",
+    detailedDefinition:
+      "Whole tone adalah langkah dua semitone. Banyak scale diatonik tersusun dari kombinasi langkah whole tone dan semitone.",
+    relatedTerms: ["semitone", "scale formula"],
+  },
+  interval: {
+    term: "Interval",
+    category: "interval",
+    shortDefinition: "Jarak antara dua nada.",
+    detailedDefinition:
+      "Interval bisa dihitung secara semitone (kuantitatif) dan kualitas (major, minor, perfect, augmented, diminished). Interval membentuk identitas melodi, chord, dan warna harmoni.",
+    relatedTerms: ["consonance", "dissonance", "tritone"],
+  },
+  intervalClass: {
+    term: "Interval Class",
+    category: "analysis",
+    shortDefinition: "Representasi interval dalam modulo 12 (0–11).",
+    detailedDefinition:
+      "Interval class menyederhanakan jarak antar pitch class tanpa peduli oktaf. Contoh: jarak 1 semitone dan 11 semitone termasuk kelas interval yang saling inversional.",
+    relatedTerms: ["pitch class", "set theory"],
+  },
+  pitchClass: {
+    term: "Pitch Class",
+    category: "analysis",
+    shortDefinition: "Kelompok nada sejenis lintas oktaf.",
+    detailedDefinition:
+      "Pitch class mengabaikan register dan hanya melihat kelas nada dalam sistem 12 nada (0–11). C3, C4, C5 berada pada pitch class yang sama.",
+    relatedTerms: ["octave", "modulo 12", "enharmonic"],
+  },
+  diatonic: {
+    term: "Diatonic",
+    category: "scale",
+    shortDefinition: "Nada/chord yang berasal dari satu tangga nada tertentu.",
+    detailedDefinition:
+      "Diatonic berarti elemen musik masih berada di dalam koleksi nada suatu key/scale. Chord diatonic biasanya dibangun dari stacking third pada scale tersebut tanpa accidental di luar key.",
+    examples: ["Dalam C mayor: C, Dm, Em, F, G, Am, Bdim"],
+    relatedTerms: ["key", "scale degree", "functional harmony"],
+  },
+  chromatic: {
+    term: "Chromatic",
+    category: "scale",
+    shortDefinition: "Menggunakan nada di luar koleksi diatonik utama.",
+    detailedDefinition:
+      "Chromatic menunjuk gerak atau warna nada yang menyertakan semitone berturut-turut atau accidental di luar key saat ini. Sering dipakai untuk passing tone, modulation, dan reharmonisasi.",
+    relatedTerms: ["accidental", "modulation", "altered"],
+  },
+  scale: {
+    term: "Scale",
+    aliases: ["Tangga nada"],
+    category: "scale",
+    shortDefinition: "Urutan nada terstruktur dalam satu oktaf.",
+    detailedDefinition:
+      "Scale adalah himpunan nada dengan pola interval tertentu. Scale menjadi sumber melodi, harmoni, dan identitas modal/tonal dalam musik.",
+    relatedTerms: ["mode", "key", "formula"],
+  },
+  mode: {
+    term: "Mode",
+    category: "scale",
+    shortDefinition: "Variasi scale berdasarkan pusat tonal berbeda.",
+    detailedDefinition:
+      "Mode (Ionian, Dorian, Phrygian, dst) adalah rotasi pola diatonik yang menghasilkan warna emosional dan fungsi harmonik berbeda walau koleksi nadanya bisa sama.",
+    relatedTerms: ["scale", "tonic", "modal harmony"],
+  },
+  key: {
+    term: "Key",
+    aliases: ["Tonal center", "Kunci"],
+    category: "harmony",
+    shortDefinition: "Pusat tonal tempat nada/chord berfungsi.",
+    detailedDefinition:
+      "Key menentukan nada tonik, koleksi diatonik utama, serta hierarki tegangan-resolusi pada harmoni fungsional. Key signature pada notasi membantu menunjukkan key global karya.",
+    relatedTerms: ["tonic", "dominant", "cadence"],
+  },
+  tonic: {
+    term: "Tonic",
+    category: "harmony",
+    shortDefinition: "Pusat istirahat harmonik (derajat I).",
+    detailedDefinition:
+      "Tonic adalah chord atau nada yang memberi rasa pulang/stabil. Dalam progresi tonal, elemen lain cenderung bergerak atau resolve menuju tonic.",
+    relatedTerms: ["dominant", "subdominant", "cadence"],
+  },
+  dominant: {
+    term: "Dominant",
+    category: "harmony",
+    shortDefinition: "Fungsi harmoni penegang menuju tonic (umumnya V).",
+    detailedDefinition:
+      "Dominant memiliki dorongan resolusi tinggi, terutama ketika memuat tritone (3 dan ♭7 pada V7). Dominant dapat bersifat diatonik atau secondary/altered.",
+    relatedTerms: ["tritone", "cadential", "secondary dominant"],
+  },
+  subdominant: {
+    term: "Subdominant",
+    category: "harmony",
+    shortDefinition: "Fungsi predominant yang mengarah ke dominant.",
+    detailedDefinition:
+      "Subdominant (umumnya IV atau ii) menyiapkan pergerakan harmonik menuju dominant. Dalam many progressions, ini jadi tahap transisi dari tonic menuju area tegangan.",
+    relatedTerms: ["predominant", "functional harmony"],
+  },
+  triad: {
+    term: "Triad",
+    category: "chord",
+    shortDefinition: "Chord tiga nada berbasis tumpukan third.",
+    detailedDefinition:
+      "Triad dibentuk dari root, third, dan fifth. Empat kualitas utama triad adalah major, minor, diminished, dan augmented. Triad adalah fondasi harmonik paling dasar.",
+    examples: ["C major = C–E–G", "A minor = A–C–E"],
+    relatedTerms: ["chord", "inversion", "quality"],
+  },
+  tetrad: {
+    term: "Tetrad",
+    aliases: ["Seventh chord"],
+    category: "chord",
+    shortDefinition: "Chord empat nada (triad + seventh).",
+    detailedDefinition:
+      "Tetrad menambah nada ke-7 di atas triad untuk memberi warna/fungsi lebih kuat, misalnya maj7, m7, 7, dim7, m7b5.",
+    relatedTerms: ["extended chord", "dominant seventh"],
+  },
+  suspended: {
+    term: "Suspended",
+    aliases: ["Sus chord"],
+    category: "chord",
+    shortDefinition: "Chord dengan third diganti 2 atau 4.",
+    detailedDefinition:
+      "Pada chord suspended, third (penentu mayor/minor) diganti derajat 2 atau 4. Akibatnya warna chord menjadi lebih terbuka/ambigu dan sering dipakai sebagai efek penundaan resolusi.",
+    examples: ["sus2: 1–2–5", "sus4: 1–4–5"],
+    relatedTerms: ["resolution", "add chord"],
+  },
+  addChord: {
+    term: "Add Chord",
+    category: "chord",
+    shortDefinition: "Triad dengan tambahan nada non-seventh.",
+    detailedDefinition:
+      "Add chord menambahkan degree tertentu (mis. add9) tanpa mengubah kualitas dasar triad dan tanpa implikasi dominant-seventh seperti pada chord extended klasik.",
+    relatedTerms: ["triad", "extension", "tension"],
+  },
+  extension: {
+    term: "Extension",
+    category: "chord",
+    shortDefinition: "Nada lanjutan di atas seventh: 9, 11, 13.",
+    detailedDefinition:
+      "Extension adalah upper structure dari chord yang memperkaya warna harmoni. Secara teori berasal dari tumpukan third lanjut setelah seventh.",
+    relatedTerms: ["tension", "upper structure", "voicing"],
+  },
+  tension: {
+    term: "Tension",
+    aliases: ["Upper tension"],
+    category: "harmony",
+    shortDefinition: "Nada/chord-tone yang menambah ketegangan warna harmonik.",
+    detailedDefinition:
+      "Tension biasanya merujuk extension (9, 11, 13) dan alterasinya (♭9, ♯9, ♯11, ♭13). Tension bisa consonant atau dissonant tergantung konteks voicing, fungsi, dan resolusinya.",
+    relatedTerms: ["extension", "altered", "resolution"],
+  },
+  altered: {
+    term: "Altered",
+    category: "harmony",
+    shortDefinition: "Perubahan degree chord dari bentuk naturalnya.",
+    detailedDefinition:
+      "Altered harmony mengubah degree tertentu (umumnya 5 dan 9 pada dominant): ♭5, ♯5, ♭9, ♯9. Digunakan untuk meningkatkan tegangan sebelum resolusi.",
+    relatedTerms: ["dominant", "tension", "chromatic"],
+  },
+  tritone: {
+    term: "Tritone",
+    aliases: ["Augmented fourth", "Diminished fifth"],
+    category: "interval",
+    shortDefinition: "Interval 6 semitone dengan disonansi tinggi.",
+    detailedDefinition:
+      "Tritone adalah interval penting dalam harmoni tonal, khususnya pada dominant seventh antara third dan seventh. Interval ini menciptakan dorongan resolusi kuat ke tonic.",
+    examples: ["B ke F = tritone (dalam G7)"],
+    relatedTerms: ["dominant", "cadence", "resolution"],
+  },
+  voicing: {
+    term: "Voicing",
+    category: "chord",
+    shortDefinition: "Cara menyusun nada chord dalam register tertentu.",
+    detailedDefinition:
+      "Voicing menentukan urutan, jarak, duplikasi, dan oktaf note chord. Chord yang sama bisa menghasilkan warna sangat berbeda tergantung voicing dan register instrumen.",
+    relatedTerms: ["inversion", "drop-2", "spread voicing", "register"],
+  },
+  inversion: {
+    term: "Inversion",
+    category: "chord",
+    shortDefinition: "Posisi chord berdasarkan nada bass selain root.",
+    detailedDefinition:
+      "Inversion terjadi ketika nada selain root berada di bass. First inversion: third di bass, second inversion: fifth di bass, dst. Inversion memengaruhi voice-leading dan stabilitas.",
+    relatedTerms: ["bass note", "slash chord", "voice leading"],
+  },
+  register: {
+    term: "Register",
+    category: "analysis",
+    shortDefinition: "Wilayah tinggi-rendah nada pada instrumen/suara.",
+    detailedDefinition:
+      "Register membagi area low, mid, dan high. Penempatan chord-tone di register berbeda memengaruhi kejelasan, tebal-tipis tekstur, dan potensi clash frekuensi.",
+    relatedTerms: ["voicing", "orchestration", "range"],
+  },
+  voiceLeading: {
+    term: "Voice Leading",
+    category: "harmony",
+    shortDefinition: "Pergerakan tiap suara antar chord secara efisien.",
+    detailedDefinition:
+      "Voice leading fokus pada perpindahan nada-nada individual agar halus, logis, dan minim lompatan berlebihan. Ini kunci untuk harmoni yang terdengar kohesif.",
+    relatedTerms: ["inversion", "cadence", "counterpoint"],
+  },
+  cadence: {
+    term: "Cadence",
+    category: "harmony",
+    shortDefinition: "Pola akhir/frase yang memberi rasa berhenti atau lanjut.",
+    detailedDefinition:
+      "Cadence adalah titik penutup atau jeda struktural dalam progresi. Jenis umum: authentic (V–I), plagal (IV–I), half (berhenti di V), deceptive (V–vi).",
+    relatedTerms: ["cadential", "tonic", "dominant"],
+  },
+  cadential: {
+    term: "Cadential",
+    category: "analysis",
+    shortDefinition:
+      "Sifat yang berkaitan dengan kekuatan menuju cadence/resolusi.",
+    detailedDefinition:
+      "Cadential menggambarkan seberapa kuat sebuah chord/progresi menuntun ke titik resolusi. Faktor utama: fungsi dominant, keberadaan tritone, posisi metriks, dan konteks voice-leading.",
+    relatedTerms: ["cadence", "resolution", "dominant"],
+  },
+  formula: {
+    term: "Formula",
+    category: "analysis",
+    shortDefinition: "Rumus interval/degree pembentuk scale atau chord.",
+    detailedDefinition:
+      "Formula menuliskan struktur musik secara abstrak, misalnya major triad = 1–3–5, m7 = 1–♭3–5–♭7, major scale = W–W–H–W–W–W–H. Ini memudahkan transposisi ke root apa pun.",
+    relatedTerms: ["degree", "semitone", "interval"],
+  },
+  degree: {
+    term: "Scale Degree",
+    aliases: ["Derajat"],
+    category: "analysis",
+    shortDefinition: "Posisi nada terhadap tonik dalam skala.",
+    detailedDefinition:
+      "Degree menamai peran relatif nada (1, 2, 3, dst) dan versi alterasinya (♭3, ♯4, dll). Degree sangat penting untuk membaca formula chord/scale lintas key.",
+    relatedTerms: ["formula", "roman numeral", "function"],
+  },
+  romanNumeral: {
+    term: "Roman Numeral Analysis",
+    category: "analysis",
+    shortDefinition: "Analisis fungsi chord memakai angka Romawi.",
+    detailedDefinition:
+      "Roman numeral menganalisis chord relatif terhadap key: I, ii, V7, viio, dll. Huruf besar biasanya major, kecil minor, dan simbol tambahan menunjukkan kualitas/extension.",
+    relatedTerms: [
+      "functional harmony",
+      "secondary dominant",
+      "borrowed chord",
+    ],
+  },
+  borrowedChord: {
+    term: "Borrowed Chord",
+    aliases: ["Modal interchange"],
+    category: "harmony",
+    shortDefinition: "Chord pinjaman dari mode paralel.",
+    detailedDefinition:
+      "Borrowed chord mengambil chord dari mode paralel (mis. C major meminjam iv dari C minor). Teknik ini menambah warna emosional tanpa modulasi penuh.",
+    relatedTerms: ["mode", "chromatic harmony", "roman numeral"],
+  },
+  secondaryDominant: {
+    term: "Secondary Dominant",
+    category: "harmony",
+    shortDefinition: "Dominant sementara untuk chord selain tonic.",
+    detailedDefinition:
+      "Secondary dominant ditulis seperti V/x, artinya dominant dari chord target x. Ini memberi dorongan resolusi lokal dan memperkaya progresi diatonik.",
+    relatedTerms: ["dominant", "cadence", "tonicization"],
+  },
+  modulation: {
+    term: "Modulation",
+    category: "form",
+    shortDefinition:
+      "Perpindahan key center dari satu tonalitas ke tonalitas lain.",
+    detailedDefinition:
+      "Modulation mengubah pusat tonal secara nyata. Dapat berlangsung sementara atau permanen, melalui pivot chord, direct modulation, sequence, atau chromatic approach.",
+    relatedTerms: ["key", "pivot chord", "tonicization"],
+  },
+  consonance: {
+    term: "Consonance",
+    category: "harmony",
+    shortDefinition: "Kesan interval/chord yang stabil dan minim gesekan.",
+    detailedDefinition:
+      "Consonance adalah tingkat kenyamanan sonik suatu interval/chord. Dalam praktik modern, consonance-dissonance bersifat kontekstual tergantung genre, ritme, dan voicing.",
+    relatedTerms: ["dissonance", "tension", "resolution"],
+  },
+  dissonance: {
+    term: "Dissonance",
+    category: "harmony",
+    shortDefinition: "Kesan gesekan sonik yang menuntut resolusi.",
+    detailedDefinition:
+      "Dissonance memberi energi gerak pada musik. Bukan berarti 'salah'; justru disonansi yang terkontrol adalah inti ekspresi harmoni modern.",
+    relatedTerms: ["consonance", "tritone", "cadence"],
+  },
+  rhythm: {
+    term: "Rhythm",
+    category: "rhythm",
+    shortDefinition: "Organisasi durasi dan aksen dalam waktu.",
+    detailedDefinition:
+      "Rhythm menentukan kapan nada/chord dimainkan. Hubungan ritme dengan harmoni memengaruhi seberapa kuat fungsi cadential dan persepsi form lagu.",
+    relatedTerms: ["meter", "groove", "syncopation"],
+  },
+  tempo: {
+    term: "Tempo",
+    category: "rhythm",
+    shortDefinition: "Kecepatan musik (BPM).",
+    detailedDefinition:
+      "Tempo adalah laju ketukan per menit. Tempo dapat mengubah persepsi kompleksitas harmoni dan kebutuhan density voicing.",
+    relatedTerms: ["BPM", "meter", "subdivision"],
+  },
+  meter: {
+    term: "Meter",
+    category: "rhythm",
+    shortDefinition: "Pola pengelompokan ketukan (mis. 4/4, 3/4, 6/8).",
+    detailedDefinition:
+      "Meter memberi kerangka aksen kuat-lemah. Titik cadence sering terasa lebih final ketika jatuh di posisi metrik kuat.",
+    relatedTerms: ["time signature", "cadential"],
+  },
+  timbre: {
+    term: "Timbre",
+    category: "audio",
+    shortDefinition: "Warna suara yang membedakan sumber bunyi.",
+    detailedDefinition:
+      "Timbre ditentukan oleh spektrum harmonik, envelope, dan karakter instrumen/sintesis. Chord yang sama bisa terasa berbeda drastis pada timbre berbeda.",
+    relatedTerms: ["harmonic", "overtone", "orchestration"],
+  },
+  chord: {
+    term: "Chord",
+    aliases: ["Akor"],
+    category: "chord",
+    shortDefinition: "Kombinasi beberapa nada yang dibunyikan bersamaan.",
+    detailedDefinition:
+      "Chord adalah struktur harmoni yang biasanya tersusun minimal dari tiga nada. Chord dapat dianalisis dari root, quality, extension, voicing, serta fungsi harmoniknya dalam key.",
+    relatedTerms: ["triad", "tetrad", "quality", "voicing"],
+  },
+  quality: {
+    term: "Quality",
+    aliases: ["Chord quality", "Kualitas chord"],
+    category: "chord",
+    shortDefinition:
+      "Karakter mayor/minor/diminished/augmented pada chord atau interval.",
+    detailedDefinition:
+      "Quality menjelaskan warna dasar struktur interval. Pada triad, quality utama meliputi major, minor, diminished, dan augmented; pada interval ada quality perfect, major, minor, augmented, diminished.",
+    relatedTerms: ["triad", "interval", "augmented", "diminished"],
+  },
+  augmented: {
+    term: "Augmented",
+    category: "interval",
+    shortDefinition:
+      "Kualitas interval/chord yang diperlebar 1 semitone dari bentuk mayor/perfect.",
+    detailedDefinition:
+      "Augmented interval terjadi ketika interval major atau perfect dinaikkan setengah nada. Pada harmoni, augmented triad memiliki formula 1–3–♯5 dan memberi warna tegang serta mengambang.",
+    examples: ["Augmented 5th", "C augmented = C–E–G#"],
+    relatedTerms: ["diminished", "altered", "quality"],
+  },
+  diminished: {
+    term: "Diminished",
+    category: "interval",
+    shortDefinition:
+      "Kualitas interval/chord yang dipersempit 1 semitone dari bentuk minor/perfect.",
+    detailedDefinition:
+      "Diminished interval terjadi ketika interval minor atau perfect diturunkan setengah nada. Pada chord, diminished triad memakai formula 1–♭3–♭5 dan sering memberi fungsi leading atau dominant substitute.",
+    examples: ["Diminished 5th", "B diminished = B–D–F"],
+    relatedTerms: ["tritone", "augmented", "quality"],
+  },
+  functionalHarmony: {
+    term: "Functional Harmony",
+    category: "harmony",
+    shortDefinition:
+      "Sistem harmoni berbasis fungsi tonic–predominant–dominant.",
+    detailedDefinition:
+      "Functional harmony membaca progresi chord sebagai alur tegangan dan resolusi. Chord tidak hanya dinilai dari bentuknya, tetapi dari peran fungsionalnya dalam key pada konteks frase.",
+    relatedTerms: ["tonic", "predominant", "dominant", "cadence"],
+  },
+  function: {
+    term: "Function",
+    aliases: ["Harmonic function"],
+    category: "harmony",
+    shortDefinition: "Peran chord terhadap pusat tonal pada suatu key.",
+    detailedDefinition:
+      "Function menjelaskan kecenderungan gerak chord, misalnya stabil (tonic), menyiapkan tegangan (predominant), atau mendorong resolusi (dominant). Konsep ini inti dalam analisis progresi.",
+    relatedTerms: ["functionalHarmony", "tonic", "dominant"],
+  },
+  predominant: {
+    term: "Predominant",
+    category: "harmony",
+    shortDefinition: "Fungsi transisi dari tonic menuju dominant.",
+    detailedDefinition:
+      "Predominant (pre-dominant) umumnya diwakili chord ii atau IV yang mengarahkan energi harmonik ke area dominant sebelum resolusi ke tonic.",
+    relatedTerms: ["subdominant", "dominant", "functionalHarmony"],
+  },
+  dominantSeventh: {
+    term: "Dominant Seventh",
+    aliases: ["V7", "7 chord"],
+    category: "chord",
+    shortDefinition: "Chord dominant dengan formula 1–3–5–♭7.",
+    detailedDefinition:
+      "Dominant seventh adalah tetrad penting dalam tonal harmony karena memuat tritone antara degree 3 dan ♭7, sehingga memberi dorongan resolusi kuat ke tonic.",
+    examples: ["G7 dalam key C mayor"],
+    relatedTerms: ["dominant", "tritone", "cadence"],
+  },
+  extendedChord: {
+    term: "Extended Chord",
+    category: "chord",
+    shortDefinition: "Chord dengan nada di atas seventh (9, 11, 13).",
+    detailedDefinition:
+      "Extended chord memperluas tetrad dengan third lanjutan sehingga warna harmoni lebih kaya. Penulisan umum: C9, C11, C13, termasuk variasi alterasinya sesuai konteks fungsi.",
+    relatedTerms: ["extension", "tension", "upperStructure"],
+  },
+  upperStructure: {
+    term: "Upper Structure",
+    category: "chord",
+    shortDefinition: "Lapisan nada atas pada chord di atas kerangka dasar.",
+    detailedDefinition:
+      "Upper structure merujuk kumpulan extension/tension yang ditumpuk di atas shell chord (mis. 3 dan 7). Konsep ini memudahkan voicing modern, jazz comping, dan orkestrasi harmoni.",
+    relatedTerms: ["extension", "tension", "voicing"],
+  },
+  resolution: {
+    term: "Resolution",
+    category: "harmony",
+    shortDefinition: "Gerak dari tegangan menuju kestabilan harmonik.",
+    detailedDefinition:
+      "Resolution adalah pelepasan ketegangan interval atau chord, sering melalui voice leading langkah kecil. Hubungan dominant ke tonic adalah contoh resolusi paling klasik dalam tonalitas.",
+    relatedTerms: ["cadence", "dominant", "voiceLeading"],
+  },
+  bassNote: {
+    term: "Bass Note",
+    category: "chord",
+    shortDefinition: "Nada terendah aktual yang terdengar pada chord.",
+    detailedDefinition:
+      "Bass note menentukan fondasi vertikal harmoni saat itu. Nada bass bisa sama dengan root atau berbeda (inversion/slash chord), sehingga sangat memengaruhi fungsi dan arah voice leading.",
+    relatedTerms: ["inversion", "slashChord", "voicing"],
+  },
+  slashChord: {
+    term: "Slash Chord",
+    category: "chord",
+    shortDefinition: "Notasi chord dengan bass spesifik: X/Y.",
+    detailedDefinition:
+      "Slash chord menunjukkan chord utama X dengan bass Y. Ini biasanya dipakai untuk menandai inversion atau bass non-root demi kontrol voice leading dan gerak bassline.",
+    examples: ["C/E", "D/F#"],
+    relatedTerms: ["inversion", "bassNote", "voiceLeading"],
+  },
+  drop2: {
+    term: "Drop-2",
+    category: "chord",
+    shortDefinition: "Teknik voicing: nada ke-2 dari atas diturunkan 1 oktaf.",
+    detailedDefinition:
+      "Drop-2 umum dipakai pada gitar, piano, dan writing ensemble agar voicing lebih terbuka serta playable. Teknik ini menjaga identitas chord sambil memberi ruang antar suara.",
+    relatedTerms: ["voicing", "spreadVoicing", "register"],
+  },
+  spreadVoicing: {
+    term: "Spread Voicing",
+    category: "chord",
+    shortDefinition: "Voicing dengan jarak antar suara yang lebih renggang.",
+    detailedDefinition:
+      "Spread voicing memisahkan chord-tone ke register yang lebih lebar untuk kejernihan spektral dan karakter grand. Kebalikannya adalah close voicing yang menumpuk nada rapat.",
+    relatedTerms: ["voicing", "drop2", "register"],
+  },
+  enharmonic: {
+    term: "Enharmonic",
+    category: "notation",
+    shortDefinition:
+      "Nada berbeda ejaan tetapi sama bunyi dalam tuning tertentu.",
+    detailedDefinition:
+      "Enharmonic equivalence terjadi ketika dua nama nada memiliki pitch sama pada 12-TET, misalnya C# dan Db. Pemilihan ejaan tetap penting untuk konteks key, fungsi, dan voice leading.",
+    examples: ["F# = Gb", "B# = C"],
+    relatedTerms: ["accidental", "pitchClass", "keySignature"],
+  },
+  keySignature: {
+    term: "Key Signature",
+    category: "notation",
+    shortDefinition: "Kumpulan accidental tetap di awal paranada.",
+    detailedDefinition:
+      "Key signature menandai pola sharp/flat yang berlaku konsisten dalam bagian musik, sehingga notasi lebih ringkas dan pembacaan key global lebih cepat.",
+    relatedTerms: ["key", "accidental", "timeSignature"],
+  },
+  setTheory: {
+    term: "Set Theory",
+    category: "analysis",
+    shortDefinition: "Pendekatan analisis pitch class sebagai himpunan.",
+    detailedDefinition:
+      "Set theory dalam musik modern menganalisis relasi antar pitch class (normal order, prime form, interval vector) tanpa bergantung pada fungsi tonal tradisional.",
+    relatedTerms: ["pitchClass", "intervalClass", "modulo12"],
+  },
+  modulo12: {
+    term: "Modulo 12",
+    category: "analysis",
+    shortDefinition: "Sistem aritmetika melingkar 12 kelas nada.",
+    detailedDefinition:
+      "Modulo 12 memetakan semua pitch ke 12 pitch class. Operasi transposisi dan inversi sering ditulis secara matematis pada ruang ini untuk analisis struktur.",
+    relatedTerms: ["pitchClass", "intervalClass", "setTheory"],
+  },
+  harmonic: {
+    term: "Harmonic",
+    aliases: ["Partial"],
+    category: "audio",
+    shortDefinition: "Komponen frekuensi kelipatan dari frekuensi dasar.",
+    detailedDefinition:
+      "Harmonic adalah nada-nada dalam deret harmonik yang muncul di atas fundamental. Distribusi energi harmonik menentukan timbre dan persepsi warna bunyi instrumen.",
+    relatedTerms: ["frequency", "overtone", "timbre"],
+  },
+  overtone: {
+    term: "Overtone",
+    category: "audio",
+    shortDefinition: "Frekuensi di atas fundamental pada suatu suara.",
+    detailedDefinition:
+      "Overtone mencakup komponen spektral non-fundamental; banyak overtone bersifat harmonik, namun pada beberapa sumber suara dapat bersifat inharmonic. Overtone memengaruhi brightness dan karakter tone.",
+    relatedTerms: ["harmonic", "timbre", "frequency"],
+  },
+  orchestration: {
+    term: "Orchestration",
+    category: "form",
+    shortDefinition: "Seni membagi materi musik ke berbagai instrumen.",
+    detailedDefinition:
+      "Orchestration menentukan siapa memainkan nada apa, di register mana, dan dengan artikulasi/timbre apa. Keputusan ini sangat memengaruhi kejelasan harmoni, tekstur, serta dinamika emosional.",
+    relatedTerms: ["register", "range", "timbre"],
+  },
+  range: {
+    term: "Range",
+    category: "analysis",
+    shortDefinition: "Rentang nada yang dapat dijangkau instrumen/suara.",
+    detailedDefinition:
+      "Range menunjukkan batas terendah hingga tertinggi yang praktis dimainkan/ dinyanyikan. Pengetahuan range penting untuk voicing, orchestrasi, dan penghindaran register yang tidak efektif.",
+    relatedTerms: ["register", "orchestration", "timbre"],
+  },
+  groove: {
+    term: "Groove",
+    category: "rhythm",
+    shortDefinition: "Nuansa dorongan ritmis yang terasa mengalir.",
+    detailedDefinition:
+      "Groove lahir dari interaksi pola ritme, aksen, artikulasi, dan timing mikro antar instrumen. Walau sulit diukur tunggal, groove sangat menentukan feel musik.",
+    relatedTerms: ["rhythm", "syncopation", "subdivision"],
+  },
+  syncopation: {
+    term: "Syncopation",
+    category: "rhythm",
+    shortDefinition: "Penekanan ritmis pada posisi lemah/off-beat.",
+    detailedDefinition:
+      "Syncopation menggeser ekspektasi aksen metrik dengan menonjolkan titik yang biasanya lemah. Teknik ini memberi energi, kejutan, dan gerak pada frase ritmis.",
+    relatedTerms: ["meter", "groove", "subdivision"],
+  },
+  subdivision: {
+    term: "Subdivision",
+    category: "rhythm",
+    shortDefinition: "Pembagian ketukan utama menjadi unit lebih kecil.",
+    detailedDefinition:
+      "Subdivision mengatur granularitas ritme (mis. eighth, triplet, sixteenth). Ketepatan subdivision penting untuk sinkronisasi ensemble dan konsistensi groove.",
+    relatedTerms: ["tempo", "meter", "timeSignature"],
+  },
+  timeSignature: {
+    term: "Time Signature",
+    category: "notation",
+    shortDefinition:
+      "Notasi angka yang menunjukkan jumlah dan nilai ketukan per birama.",
+    detailedDefinition:
+      "Time signature (mis. 4/4, 3/4, 6/8) memberi kerangka metrik: angka atas menunjukkan jumlah ketukan per bar, angka bawah menunjukkan nilai not yang menjadi satu ketukan.",
+    relatedTerms: ["meter", "rhythm", "subdivision"],
+  },
+  bpm: {
+    term: "BPM",
+    aliases: ["Beats Per Minute"],
+    category: "rhythm",
+    shortDefinition: "Satuan numerik untuk mengukur tempo.",
+    detailedDefinition:
+      "BPM menyatakan berapa ketukan terjadi dalam satu menit. Nilai ini dipakai untuk metronome, sinkronisasi produksi musik, dan komunikasi tempo antarmusisi.",
+    relatedTerms: ["tempo", "rhythm", "subdivision"],
+  },
+  scaleFormula: {
+    term: "Scale Formula",
+    category: "scale",
+    shortDefinition: "Rumus pola interval pembentuk suatu scale.",
+    detailedDefinition:
+      "Scale formula menuliskan struktur langkah (W/H) atau degree relatif (1, 2, ♭3, dst) agar pola scale mudah ditransposisi ke root mana pun.",
+    relatedTerms: ["formula", "degree", "scale"],
+  },
+  modalHarmony: {
+    term: "Modal Harmony",
+    category: "harmony",
+    shortDefinition:
+      "Pendekatan harmoni berbasis mode, bukan fungsi tonal klasik.",
+    detailedDefinition:
+      "Modal harmony menekankan warna mode (Dorian, Mixolydian, dst) dan pusat tonal statis relatif, sering dengan progresi yang tidak selalu mengikuti alur dominant-tonic kuat.",
+    relatedTerms: ["mode", "functionalHarmony", "chromaticHarmony"],
+  },
+  chromaticHarmony: {
+    term: "Chromatic Harmony",
+    category: "harmony",
+    shortDefinition: "Harmoni yang memanfaatkan nada/chord non-diatonik.",
+    detailedDefinition:
+      "Chromatic harmony memperluas warna tonal melalui altered chord, secondary dominant, borrowed chord, atau jalur voice leading kromatis.",
+    relatedTerms: ["chromatic", "altered", "borrowedChord"],
+  },
+  tonicization: {
+    term: "Tonicization",
+    category: "harmony",
+    shortDefinition: "Penegasan sementara suatu chord seolah menjadi tonic.",
+    detailedDefinition:
+      "Tonicization biasanya berlangsung singkat dengan bantuan secondary dominant atau leading-tone chord ke target tertentu, tanpa perpindahan key permanen seperti modulasi penuh.",
+    relatedTerms: ["secondaryDominant", "modulation", "pivotChord"],
+  },
+  pivotChord: {
+    term: "Pivot Chord",
+    category: "harmony",
+    shortDefinition: "Chord bersama yang dipakai sebagai jembatan modulasi.",
+    detailedDefinition:
+      "Pivot chord berfungsi di dua key berbeda sekaligus, sehingga transisi tonal terasa lebih halus. Teknik ini umum dalam modulasi di musik tonal klasik dan pop-jazz.",
+    relatedTerms: ["modulation", "tonicization", "key"],
+  },
+  counterpoint: {
+    term: "Counterpoint",
+    category: "analysis",
+    shortDefinition: "Teknik menggabungkan beberapa garis melodi independen.",
+    detailedDefinition:
+      "Counterpoint mempelajari hubungan horizontal antar suara yang bergerak mandiri tetapi tetap harmonis secara vertikal. Konsep ini berkaitan erat dengan voice leading.",
+    relatedTerms: ["voiceLeading", "cadence", "functionalHarmony"],
+  },
+};
+
+export const MUSIC_DICTIONARY_LIST: MusicDictionaryEntry[] =
+  Object.values(MUSIC_DICTIONARY);
+
+export function getMusicTerm(
+  termKey: string,
+): MusicDictionaryEntry | undefined {
+  return MUSIC_DICTIONARY[termKey];
+}
+
+export function findMusicTerms(keyword: string): MusicDictionaryEntry[] {
+  const q = keyword.trim().toLowerCase();
+  if (!q) return MUSIC_DICTIONARY_LIST;
+
+  return MUSIC_DICTIONARY_LIST.filter((entry) => {
+    const inTerm = entry.term.toLowerCase().includes(q);
+    const inAlias = entry.aliases?.some((alias) =>
+      alias.toLowerCase().includes(q),
+    );
+    const inShort = entry.shortDefinition.toLowerCase().includes(q);
+    const inDetail = entry.detailedDefinition.toLowerCase().includes(q);
+    return Boolean(inTerm || inAlias || inShort || inDetail);
+  });
+}

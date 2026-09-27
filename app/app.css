@@ -1,0 +1,1123 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@plugin "@tailwindcss/typography";
+@import "./templates/components/custom/interactive-window/iw.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --font-sans:
+    "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+:root {
+  --background: rgb(255 255 255);
+  --foreground: rgb(51 51 51);
+  --card: rgb(255, 248, 248);
+  --card-foreground: rgb(51 51 51);
+  --popover: rgb(255 255 255);
+  --popover-foreground: rgb(51 51 51);
+  --primary: rgb(252 38 70);
+  --primary-foreground: rgb(255 255 255);
+  --secondary: rgb(245 245 245);
+  --secondary-foreground: rgb(75 86 102);
+  --muted: rgb(248 248 248);
+  --muted-foreground: rgb(108 114 126);
+  --accent: rgb(255 220 226);
+  --accent-foreground: rgb(139 10 30);
+  --destructive: rgb(241 68 68);
+  --border: rgb(228 232 239);
+  --input: rgb(228 232 239);
+  --ring: rgb(252 38 70);
+  --chart-1: rgb(252 38 70);
+  --chart-2: rgb(220 25 55);
+  --chart-3: rgb(188 15 42);
+  --chart-4: rgb(156 10 32);
+  --chart-5: rgb(124 5 22);
+  --sidebar: rgb(248 248 248);
+  --sidebar-foreground: rgb(9 9 9);
+  --sidebar-primary: rgb(200 15 42);
+  --sidebar-primary-foreground: rgb(248 248 248);
+  --sidebar-accent: rgb(245 245 245);
+  --sidebar-accent-foreground: rgb(22 22 22);
+  --sidebar-border: rgb(228 228 228);
+  --sidebar-ring: rgb(161 161 161);
+
+  --font-sans:
+    "Geist", "Geist Fallback", ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol", "Noto Color Emoji";
+  --font-serif: Source Serif 4, serif;
+  --font-mono: JetBrains Mono, monospace;
+
+  --radius: 0.375rem;
+
+  --shadow-2xs: 0 1px 3px 0px rgb(0 0 0 / 0.05);
+  --shadow-xs: 0 1px 3px 0px rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 3px 0px rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow: 0 1px 3px 0px rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 1px 3px 0px rgb(0 0 0 / 0.1), 0 2px 4px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 1px 3px 0px rgb(0 0 0 / 0.1), 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 1px 3px 0px rgb(0 0 0 / 0.1), 0 8px 10px -1px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 1px 3px 0px rgb(0 0 0 / 0.25);
+}
+
+.dark {
+  --background: rgb(22 22 22);
+  --foreground: rgb(228 228 228);
+  --card: rgb(38 38 38);
+  --card-foreground: rgb(228 228 228);
+  --popover: rgb(38 38 38);
+  --popover-foreground: rgb(228 228 228);
+  --primary: rgb(252 38 70);
+  --primary-foreground: rgb(255 255 255);
+  --secondary: rgb(38 38 38);
+  --secondary-foreground: rgb(228 228 228);
+  --muted: rgb(38 38 38);
+  --muted-foreground: rgb(164 164 164);
+  --accent: rgb(100 10 25);
+  --accent-foreground: rgb(255 200 210);
+  --destructive: rgb(241 68 68);
+  --border: rgb(64 64 64);
+  --input: rgb(64 64 64);
+  --ring: rgb(252 38 70);
+  --chart-1: rgb(255 130 148);
+  --chart-2: rgb(252 80 100);
+  --chart-3: rgb(240 50 75);
+  --chart-4: rgb(220 30 58);
+  --chart-5: rgb(188 15 42);
+  --sidebar: rgb(24 24 29);
+  --sidebar-foreground: rgb(252 252 252);
+  --sidebar-primary: rgb(180 15 40);
+  --sidebar-primary-foreground: rgb(252 252 252);
+  --sidebar-accent: rgb(38 38 43);
+  --sidebar-accent-foreground: rgb(252 252 252);
+  --sidebar-border: rgb(255 255 255 / 0.1);
+  --sidebar-ring: rgb(112 112 125);
+
+  --shadow-2xs: 0 1px 3px 0px rgb(0 0 0 / 0.05);
+  --shadow-xs: 0 1px 3px 0px rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 3px 0px rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow: 0 1px 3px 0px rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 1px 3px 0px rgb(0 0 0 / 0.1), 0 2px 4px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 1px 3px 0px rgb(0 0 0 / 0.1), 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 1px 3px 0px rgb(0 0 0 / 0.1), 0 8px 10px -1px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 1px 3px 0px rgb(0 0 0 / 0.25);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-serif: var(--font-serif);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --shadow-2xs: var(--shadow-2xs);
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow: var(--shadow);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+  --shadow-2xl: var(--shadow-2xl);
+  --animate-aurora: aurora 60s linear infinite;
+  @keyframes aurora {
+    from {
+      backgroundposition:
+        50% 50%,
+        50% 50%;
+    }
+    to {
+      backgroundposition:
+        350% 50%,
+        350% 50%;
+    }
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(82 82 91) rgb(24 24 29 / 0.55);
+  }
+
+  .dark * {
+    scrollbar-color: rgb(82 82 91 / 0.8) rgb(24 24 29 / 0.75);
+  }
+
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: rgb(39 39 42 / 0.55);
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: rgb(82 82 91 / 0.9);
+    border-radius: 9999px;
+    border: 2px solid rgb(39 39 42 / 0.45);
+  }
+
+  .dark *::-webkit-scrollbar-track {
+    background: rgb(24 24 29 / 0.8);
+  }
+
+  .dark *::-webkit-scrollbar-thumb {
+    background: rgb(82 82 91 / 0.88);
+    border: 2px solid rgb(24 24 29 / 0.8);
+  }
+}
+
+@keyframes fret-live-pulse {
+  0% {
+    box-shadow:
+      0 0 0 0 rgb(99 102 241 / 0.22),
+      0 0 0 0 rgb(34 211 238 / 0.12);
+  }
+  60% {
+    box-shadow:
+      0 0 0 6px rgb(99 102 241 / 0),
+      0 0 18px 2px rgb(34 211 238 / 0.35);
+  }
+  100% {
+    box-shadow:
+      0 0 0 0 rgb(99 102 241 / 0),
+      0 0 0 0 rgb(34 211 238 / 0);
+  }
+}
+
+@keyframes fret-live-shake {
+  0% {
+    transform: rotate(calc(var(--fret-live-tilt, 0deg) * -1));
+  }
+  25% {
+    transform: rotate(var(--fret-live-tilt, 0deg));
+  }
+  50% {
+    transform: rotate(calc(var(--fret-live-tilt, 0deg) * -0.7));
+  }
+  75% {
+    transform: rotate(calc(var(--fret-live-tilt, 0deg) * 0.7));
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes tuner-carousel-drift {
+  0% {
+    filter: saturate(1) brightness(1);
+  }
+  25% {
+    filter: saturate(1.18) brightness(1.06);
+  }
+  50% {
+    filter: saturate(1.3) brightness(1.1);
+  }
+  75% {
+    filter: saturate(1.18) brightness(1.06);
+  }
+  100% {
+    filter: saturate(1) brightness(1);
+  }
+}
+
+@keyframes tuner-arc-glow {
+  0%, 100% {
+    opacity: 0.82;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes tuner-perfect-shake {
+  0% {
+    transform: translateX(0) rotate(0deg);
+  }
+  20% {
+    transform: translateX(-1px) rotate(-2deg);
+  }
+  40% {
+    transform: translateX(1px) rotate(2deg);
+  }
+  60% {
+    transform: translateX(-1px) rotate(-1deg);
+  }
+  80% {
+    transform: translateX(1px) rotate(1deg);
+  }
+  100% {
+    transform: translateX(0) rotate(0deg);
+  }
+}
+
+.fretboard-live-note {
+  border-color: rgb(99 102 241 / 0.95) !important;
+  background: linear-gradient(
+    145deg,
+    rgb(99 102 241 / 0.32),
+    rgb(34 211 238 / 0.24)
+  ) !important;
+  color: rgb(224 242 254) !important;
+  animation: fret-live-pulse 420ms ease-out;
+  border-radius: 9999px !important;
+  box-shadow: 0 0 8px rgb(99 102 241 / 0.3), 0 2px 4px rgb(0 0 0 / 0.1) !important;
+}
+
+.fretboard-live-note-shake {
+  transform-origin: center;
+  animation:
+    fret-live-pulse 420ms ease-out,
+    fret-live-shake 280ms ease-in-out;
+}
+
+.fretboard-live-note-unstable {
+  border-color: rgb(245 158 11 / 0.85) !important;
+  background: linear-gradient(
+    145deg,
+    rgb(245 158 11 / 0.22),
+    rgb(251 191 36 / 0.16)
+  ) !important;
+  color: rgb(255 237 213) !important;
+  border-radius: 9999px !important;
+}
+
+.tuner-note-carousel-run {
+  animation: tuner-carousel-drift 900ms ease-in-out infinite;
+}
+
+.tuner-arc-drift {
+  animation: tuner-arc-glow 1.2s ease-in-out infinite;
+}
+
+.tuner-note-perfect {
+  transform-origin: center;
+  box-shadow:
+    0 0 0 1px rgb(110 231 183 / 0.65),
+    0 0 16px rgb(52 211 153 / 0.38);
+  animation: tuner-perfect-shake 280ms ease-in-out infinite;
+}
+
+/* ── alphaTab Player Cursors & Dark Mode ─────────────── */
+
+/* Bar cursor — soft yellow highlight on the current bar */
+.at-cursor-bar {
+  background: rgba(255, 242, 0, 0.25);
+}
+
+/* Beat cursor — vertical indicator line */
+.at-cursor-beat {
+  background: rgba(252, 38, 70, 0.65);
+  width: 3px;
+}
+
+/* Selection range highlight */
+.at-selection div {
+  background: rgba(252, 38, 70, 0.1);
+}
+
+/* Highlight played notes/beats in the SVG notation */
+.at-highlight * {
+  fill: #fc2646;
+  stroke: #fc2646;
+}
+
+/* ── alphaTab dark mode container ──────────────────── */
+
+/* Host wrapper — dark surface with light notation */
+.at-surface-dark {
+  background: var(--card);
+  border-radius: 0.375rem;
+  border: 1px solid rgb(64 64 64);
+  padding: 0.35rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+  min-height: 280px;
+}
+
+/* Invert the SVG fill/stroke for dark backgrounds */
+.at-surface-dark .at-main svg text,
+.at-surface-dark .at-main svg [fill="#000000"],
+.at-surface-dark .at-main svg [fill="#000"],
+.at-surface-dark .at-main svg [fill="rgb(0,0,0)"] {
+  fill: #e4e4e4;
+}
+
+.at-surface-dark .at-main svg [stroke="#000000"],
+.at-surface-dark .at-main svg [stroke="#000"],
+.at-surface-dark .at-main svg [stroke="rgb(0,0,0)"] {
+  stroke: #e4e4e4;
+}
+
+/* Override white SVG background rects on dark surface */
+.at-surface-dark .at-main svg rect[fill="#ffffff"],
+.at-surface-dark .at-main svg rect[fill="#fff"],
+.at-surface-dark .at-main svg rect[fill="rgb(255,255,255)"] {
+  fill: transparent;
+}
+
+/* Ensure all text is light on dark surface */
+.at-surface-dark .at-main svg text {
+  fill: #e4e4e4 !important;
+}
+
+/* Ensure SVG paths are light on dark surface */
+.at-surface-dark .at-main svg path {
+  stroke: #e4e4e4;
+}
+
+/* Adjust cursor opacity on dark surfaces */
+.at-surface-dark .at-cursor-bar {
+  background: rgba(255, 242, 0, 0.15);
+}
+
+.at-surface-dark .at-cursor-beat {
+  background: rgba(252, 38, 70, 0.72);
+}
+
+.at-surface-dark .at-highlight * {
+  fill: #fc6080;
+  stroke: #fc6080;
+}
+
+/* Light mode host — clean white surface */
+.at-surface-light {
+  background: rgba(255, 255, 255, 0.97);
+  border-radius: 0.375rem;
+  border: 1px solid rgb(228 232 239);
+  padding: 0.35rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+  min-height: 280px;
+  color: #000000;
+}
+
+/* Force all SVG elements to dark on light background */
+.at-surface-light .at-main svg text,
+.at-surface-light .at-main svg [fill="#000000"],
+.at-surface-light .at-main svg [fill="#000"],
+.at-surface-light .at-main svg [fill="rgb(0,0,0)"] {
+  fill: #1a1a1a;
+}
+
+.at-surface-light .at-main svg [stroke="#000000"],
+.at-surface-light .at-main svg [stroke="#000"],
+.at-surface-light .at-main svg [stroke="rgb(0,0,0)"] {
+  stroke: #1a1a1a;
+}
+
+/* Ensure all text and path elements are visible */
+.at-surface-light .at-main svg text {
+  fill: #1a1a1a !important;
+}
+
+.at-surface-light .at-main svg path {
+  stroke: #1a1a1a;
+}
+
+.at-surface-light .at-main svg rect[fill="#ffffff"],
+.at-surface-light .at-main svg rect[fill="#fff"],
+.at-surface-light .at-main svg rect[fill="rgb(255,255,255)"] {
+  fill: rgba(255, 255, 255, 0.97);
+}
+
+.at-surface-light .at-cursor-bar {
+  background: rgba(59, 130, 246, 0.12);
+}
+
+.at-surface-light .at-cursor-beat {
+  background: rgba(252, 38, 70, 0.6);
+}
+
+.at-surface-light .at-highlight * {
+  fill: #e11d48;
+  stroke: #e11d48;
+}
+
+.at-surface-dark .at-main,
+.at-surface-light .at-main {
+  overflow-x: hidden !important;
+}
+
+.at-surface-dark .at-main svg,
+.at-surface-light .at-main svg {
+  max-width: 100%;
+}
+
+/* Hide only alphaTab attribution footer (keep notation visible) */
+/* .at-main svg.at-surface-svg[height="12px"],
+.at-main svg.at-surface-svg[height="13px"],
+.at-main svg.at-surface-svg[height="14px"] {
+  display: none !important;
+} */
+
+/* ── Piano Keyboard ──────────────────────────────────── */
+
+.piano-keyboard {
+  position: relative;
+  user-select: none;
+  height: 180px;
+}
+
+/* ── White keys ─────────────────────────────────────── */
+
+.piano-white-keys {
+  display: flex;
+  height: 100%;
+  gap: 1.5px;
+}
+
+.piano-white-key {
+  position: relative;
+  flex: 1 1 0%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  border: 1px solid rgb(200 200 200);
+  border-radius: 0 0 6px 6px;
+  cursor: pointer;
+  transition: background 80ms ease, box-shadow 80ms ease, transform 60ms ease;
+
+  /* Realistic white key appearance */
+  background: linear-gradient(
+    180deg,
+    rgb(252 252 252) 0%,
+    rgb(245 245 245) 60%,
+    rgb(238 238 238) 100%
+  );
+  box-shadow:
+    0 2px 3px rgb(0 0 0 / 0.08),
+    0 6px 8px rgb(0 0 0 / 0.04),
+    inset 0 -1px 0 rgb(0 0 0 / 0.06);
+}
+
+.dark .piano-white-key {
+  border-color: rgb(60 60 60);
+  background: linear-gradient(
+    180deg,
+    rgb(215 215 220) 0%,
+    rgb(200 200 205) 60%,
+    rgb(185 185 190) 100%
+  );
+  box-shadow:
+    0 2px 3px rgb(0 0 0 / 0.25),
+    0 6px 8px rgb(0 0 0 / 0.12),
+    inset 0 -1px 0 rgb(0 0 0 / 0.15);
+}
+
+.piano-white-key:hover {
+  background: linear-gradient(
+    180deg,
+    rgb(248 248 255) 0%,
+    rgb(240 240 248) 60%,
+    rgb(232 232 240) 100%
+  );
+}
+
+.piano-white-key:active {
+  transform: scaleY(0.985) translateY(1px);
+  background: linear-gradient(
+    180deg,
+    rgb(240 240 240) 0%,
+    rgb(230 230 235) 60%,
+    rgb(225 225 230) 100%
+  );
+  box-shadow:
+    0 1px 1px rgb(0 0 0 / 0.06),
+    inset 0 2px 4px rgb(0 0 0 / 0.08);
+}
+
+.piano-white-key-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 6px;
+  font-size: 10px;
+  line-height: 1.2;
+  color: rgb(120 120 130);
+  pointer-events: none;
+}
+
+.dark .piano-white-key-label {
+  color: rgb(100 100 110);
+}
+
+/* ── Black keys ─────────────────────────────────────── */
+
+.piano-black-keys {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 62%;
+  pointer-events: none;
+}
+
+.piano-black-key {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  border: 1px solid rgb(30 30 30);
+  border-radius: 0 0 4px 4px;
+  cursor: pointer;
+  pointer-events: auto;
+  z-index: 2;
+  transition: background 80ms ease, box-shadow 80ms ease, transform 60ms ease;
+
+  /* Realistic black key appearance */
+  background: linear-gradient(
+    180deg,
+    rgb(50 50 55) 0%,
+    rgb(35 35 38) 50%,
+    rgb(25 25 28) 100%
+  );
+  box-shadow:
+    0 3px 5px rgb(0 0 0 / 0.35),
+    0 6px 10px rgb(0 0 0 / 0.15),
+    inset 0 -2px 3px rgb(0 0 0 / 0.3),
+    inset 0 1px 0 rgb(80 80 85 / 0.25);
+}
+
+.dark .piano-black-key {
+  border-color: rgb(15 15 15);
+  background: linear-gradient(
+    180deg,
+    rgb(40 40 45) 0%,
+    rgb(25 25 28) 50%,
+    rgb(15 15 18) 100%
+  );
+  box-shadow:
+    0 3px 5px rgb(0 0 0 / 0.5),
+    0 6px 10px rgb(0 0 0 / 0.25),
+    inset 0 -2px 3px rgb(0 0 0 / 0.4),
+    inset 0 1px 0 rgb(70 70 75 / 0.2);
+}
+
+.piano-black-key:hover {
+  background: linear-gradient(
+    180deg,
+    rgb(60 60 68) 0%,
+    rgb(42 42 48) 50%,
+    rgb(30 30 35) 100%
+  );
+}
+
+.piano-black-key:active {
+  transform: scaleY(0.97) translateY(1px);
+  background: linear-gradient(
+    180deg,
+    rgb(38 38 42) 0%,
+    rgb(25 25 28) 50%,
+    rgb(18 18 20) 100%
+  );
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.3),
+    inset 0 2px 5px rgb(0 0 0 / 0.35);
+}
+
+.piano-black-key-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 5px;
+  font-size: 9px;
+  line-height: 1.2;
+  color: rgb(160 160 170);
+  pointer-events: none;
+}
+
+.piano-tone-label {
+  font-size: 8px;
+  max-width: 52px;
+  text-align: center;
+  line-height: 1.1;
+  opacity: 0.85;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.piano-tone-label-black {
+  font-size: 7px;
+  max-width: 40px;
+  text-align: center;
+  line-height: 1.1;
+  opacity: 0.85;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Highlight classes for white keys (12 pitch classes) ── */
+
+.piano-hl-pink { background: linear-gradient(180deg, rgb(252 252 252) 0%, rgb(252 231 236) 50%, rgb(236 72 153 / 0.25) 100%) !important; border-color: rgb(236 72 153 / 0.6) !important; }
+.piano-hl-rose { background: linear-gradient(180deg, rgb(252 252 252) 0%, rgb(252 228 232) 50%, rgb(244 63 94 / 0.25) 100%) !important; border-color: rgb(244 63 94 / 0.6) !important; }
+.piano-hl-orange { background: linear-gradient(180deg, rgb(252 252 252) 0%, rgb(255 237 213) 50%, rgb(249 115 22 / 0.25) 100%) !important; border-color: rgb(249 115 22 / 0.6) !important; }
+.piano-hl-amber { background: linear-gradient(180deg, rgb(252 252 252) 0%, rgb(254 243 199) 50%, rgb(245 158 11 / 0.25) 100%) !important; border-color: rgb(245 158 11 / 0.6) !important; }
+.piano-hl-blue { background: linear-gradient(180deg, rgb(252 252 252) 0%, rgb(219 234 254) 50%, rgb(59 130 246 / 0.25) 100%) !important; border-color: rgb(59 130 246 / 0.6) !important; }
+.piano-hl-cyan { background: linear-gradient(180deg, rgb(252 252 252) 0%, rgb(207 250 254) 50%, rgb(6 182 212 / 0.25) 100%) !important; border-color: rgb(6 182 212 / 0.6) !important; }
+.piano-hl-teal { background: linear-gradient(180deg, rgb(252 252 252) 0%, rgb(204 251 241) 50%, rgb(20 184 166 / 0.25) 100%) !important; border-color: rgb(20 184 166 / 0.6) !important; }
+.piano-hl-emerald { background: linear-gradient(180deg, rgb(252 252 252) 0%, rgb(209 250 229) 50%, rgb(16 185 129 / 0.25) 100%) !important; border-color: rgb(16 185 129 / 0.6) !important; }
+.piano-hl-lime { background: linear-gradient(180deg, rgb(252 252 252) 0%, rgb(217 249 157) 50%, rgb(132 204 22 / 0.25) 100%) !important; border-color: rgb(132 204 22 / 0.6) !important; }
+.piano-hl-violet { background: linear-gradient(180deg, rgb(252 252 252) 0%, rgb(237 233 254) 50%, rgb(139 92 246 / 0.25) 100%) !important; border-color: rgb(139 92 246 / 0.6) !important; }
+.piano-hl-fuchsia { background: linear-gradient(180deg, rgb(252 252 252) 0%, rgb(250 232 255) 50%, rgb(217 70 239 / 0.25) 100%) !important; border-color: rgb(217 70 239 / 0.6) !important; }
+.piano-hl-sky { background: linear-gradient(180deg, rgb(252 252 252) 0%, rgb(224 242 254) 50%, rgb(14 165 233 / 0.25) 100%) !important; border-color: rgb(14 165 233 / 0.6) !important; }
+
+/* Active white keys (clicked/selected) — deeper saturation + ring */
+.piano-active-pink { background: linear-gradient(180deg, rgb(251 207 232) 0%, rgb(236 72 153 / 0.35) 100%) !important; border-color: rgb(236 72 153 / 0.8) !important; box-shadow: 0 0 0 2px rgb(236 72 153 / 0.3), 0 2px 8px rgb(236 72 153 / 0.2) !important; }
+.piano-active-rose { background: linear-gradient(180deg, rgb(254 205 211) 0%, rgb(244 63 94 / 0.35) 100%) !important; border-color: rgb(244 63 94 / 0.8) !important; box-shadow: 0 0 0 2px rgb(244 63 94 / 0.3), 0 2px 8px rgb(244 63 94 / 0.2) !important; }
+.piano-active-orange { background: linear-gradient(180deg, rgb(255 237 213) 0%, rgb(249 115 22 / 0.35) 100%) !important; border-color: rgb(249 115 22 / 0.8) !important; box-shadow: 0 0 0 2px rgb(249 115 22 / 0.3), 0 2px 8px rgb(249 115 22 / 0.2) !important; }
+.piano-active-amber { background: linear-gradient(180deg, rgb(254 243 199) 0%, rgb(245 158 11 / 0.35) 100%) !important; border-color: rgb(245 158 11 / 0.8) !important; box-shadow: 0 0 0 2px rgb(245 158 11 / 0.3), 0 2px 8px rgb(245 158 11 / 0.2) !important; }
+.piano-active-blue { background: linear-gradient(180deg, rgb(219 234 254) 0%, rgb(59 130 246 / 0.35) 100%) !important; border-color: rgb(59 130 246 / 0.8) !important; box-shadow: 0 0 0 2px rgb(59 130 246 / 0.3), 0 2px 8px rgb(59 130 246 / 0.2) !important; }
+.piano-active-cyan { background: linear-gradient(180deg, rgb(207 250 254) 0%, rgb(6 182 212 / 0.35) 100%) !important; border-color: rgb(6 182 212 / 0.8) !important; box-shadow: 0 0 0 2px rgb(6 182 212 / 0.3), 0 2px 8px rgb(6 182 212 / 0.2) !important; }
+.piano-active-teal { background: linear-gradient(180deg, rgb(204 251 241) 0%, rgb(20 184 166 / 0.35) 100%) !important; border-color: rgb(20 184 166 / 0.8) !important; box-shadow: 0 0 0 2px rgb(20 184 166 / 0.3), 0 2px 8px rgb(20 184 166 / 0.2) !important; }
+.piano-active-emerald { background: linear-gradient(180deg, rgb(209 250 229) 0%, rgb(16 185 129 / 0.35) 100%) !important; border-color: rgb(16 185 129 / 0.8) !important; box-shadow: 0 0 0 2px rgb(16 185 129 / 0.3), 0 2px 8px rgb(16 185 129 / 0.2) !important; }
+.piano-active-lime { background: linear-gradient(180deg, rgb(217 249 157) 0%, rgb(132 204 22 / 0.35) 100%) !important; border-color: rgb(132 204 22 / 0.8) !important; box-shadow: 0 0 0 2px rgb(132 204 22 / 0.3), 0 2px 8px rgb(132 204 22 / 0.2) !important; }
+.piano-active-violet { background: linear-gradient(180deg, rgb(237 233 254) 0%, rgb(139 92 246 / 0.35) 100%) !important; border-color: rgb(139 92 246 / 0.8) !important; box-shadow: 0 0 0 2px rgb(139 92 246 / 0.3), 0 2px 8px rgb(139 92 246 / 0.2) !important; }
+.piano-active-fuchsia { background: linear-gradient(180deg, rgb(250 232 255) 0%, rgb(217 70 239 / 0.35) 100%) !important; border-color: rgb(217 70 239 / 0.8) !important; box-shadow: 0 0 0 2px rgb(217 70 239 / 0.3), 0 2px 8px rgb(217 70 239 / 0.2) !important; }
+.piano-active-sky { background: linear-gradient(180deg, rgb(224 242 254) 0%, rgb(14 165 233 / 0.35) 100%) !important; border-color: rgb(14 165 233 / 0.8) !important; box-shadow: 0 0 0 2px rgb(14 165 233 / 0.3), 0 2px 8px rgb(14 165 233 / 0.2) !important; }
+
+/* ── Highlight classes for black keys ─────────────────── */
+
+.piano-hl-pink-black { background: linear-gradient(180deg, rgb(236 72 153 / 0.5) 0%, rgb(190 24 93 / 0.7) 100%) !important; border-color: rgb(236 72 153 / 0.8) !important; }
+.piano-hl-rose-black { background: linear-gradient(180deg, rgb(244 63 94 / 0.5) 0%, rgb(190 18 60 / 0.7) 100%) !important; border-color: rgb(244 63 94 / 0.8) !important; }
+.piano-hl-orange-black { background: linear-gradient(180deg, rgb(249 115 22 / 0.5) 0%, rgb(194 65 12 / 0.7) 100%) !important; border-color: rgb(249 115 22 / 0.8) !important; }
+.piano-hl-amber-black { background: linear-gradient(180deg, rgb(245 158 11 / 0.5) 0%, rgb(180 83 9 / 0.7) 100%) !important; border-color: rgb(245 158 11 / 0.8) !important; }
+.piano-hl-blue-black { background: linear-gradient(180deg, rgb(59 130 246 / 0.5) 0%, rgb(29 78 216 / 0.7) 100%) !important; border-color: rgb(59 130 246 / 0.8) !important; }
+.piano-hl-cyan-black { background: linear-gradient(180deg, rgb(6 182 212 / 0.5) 0%, rgb(8 145 178 / 0.7) 100%) !important; border-color: rgb(6 182 212 / 0.8) !important; }
+.piano-hl-teal-black { background: linear-gradient(180deg, rgb(20 184 166 / 0.5) 0%, rgb(15 118 110 / 0.7) 100%) !important; border-color: rgb(20 184 166 / 0.8) !important; }
+.piano-hl-emerald-black { background: linear-gradient(180deg, rgb(16 185 129 / 0.5) 0%, rgb(4 120 87 / 0.7) 100%) !important; border-color: rgb(16 185 129 / 0.8) !important; }
+.piano-hl-lime-black { background: linear-gradient(180deg, rgb(132 204 22 / 0.5) 0%, rgb(77 124 15 / 0.7) 100%) !important; border-color: rgb(132 204 22 / 0.8) !important; }
+.piano-hl-violet-black { background: linear-gradient(180deg, rgb(139 92 246 / 0.5) 0%, rgb(109 40 217 / 0.7) 100%) !important; border-color: rgb(139 92 246 / 0.8) !important; }
+.piano-hl-fuchsia-black { background: linear-gradient(180deg, rgb(217 70 239 / 0.5) 0%, rgb(162 28 175 / 0.7) 100%) !important; border-color: rgb(217 70 239 / 0.8) !important; }
+.piano-hl-sky-black { background: linear-gradient(180deg, rgb(14 165 233 / 0.5) 0%, rgb(2 132 199 / 0.7) 100%) !important; border-color: rgb(14 165 233 / 0.8) !important; }
+
+/* Active black keys */
+.piano-active-pink-black { background: linear-gradient(180deg, rgb(236 72 153 / 0.7) 0%, rgb(190 24 93 / 0.9) 100%) !important; border-color: rgb(236 72 153) !important; box-shadow: 0 0 0 2px rgb(236 72 153 / 0.4), 0 0 12px rgb(236 72 153 / 0.35) !important; }
+.piano-active-rose-black { background: linear-gradient(180deg, rgb(244 63 94 / 0.7) 0%, rgb(190 18 60 / 0.9) 100%) !important; border-color: rgb(244 63 94) !important; box-shadow: 0 0 0 2px rgb(244 63 94 / 0.4), 0 0 12px rgb(244 63 94 / 0.35) !important; }
+.piano-active-orange-black { background: linear-gradient(180deg, rgb(249 115 22 / 0.7) 0%, rgb(194 65 12 / 0.9) 100%) !important; border-color: rgb(249 115 22) !important; box-shadow: 0 0 0 2px rgb(249 115 22 / 0.4), 0 0 12px rgb(249 115 22 / 0.35) !important; }
+.piano-active-amber-black { background: linear-gradient(180deg, rgb(245 158 11 / 0.7) 0%, rgb(180 83 9 / 0.9) 100%) !important; border-color: rgb(245 158 11) !important; box-shadow: 0 0 0 2px rgb(245 158 11 / 0.4), 0 0 12px rgb(245 158 11 / 0.35) !important; }
+.piano-active-blue-black { background: linear-gradient(180deg, rgb(59 130 246 / 0.7) 0%, rgb(29 78 216 / 0.9) 100%) !important; border-color: rgb(59 130 246) !important; box-shadow: 0 0 0 2px rgb(59 130 246 / 0.4), 0 0 12px rgb(59 130 246 / 0.35) !important; }
+.piano-active-cyan-black { background: linear-gradient(180deg, rgb(6 182 212 / 0.7) 0%, rgb(8 145 178 / 0.9) 100%) !important; border-color: rgb(6 182 212) !important; box-shadow: 0 0 0 2px rgb(6 182 212 / 0.4), 0 0 12px rgb(6 182 212 / 0.35) !important; }
+.piano-active-teal-black { background: linear-gradient(180deg, rgb(20 184 166 / 0.7) 0%, rgb(15 118 110 / 0.9) 100%) !important; border-color: rgb(20 184 166) !important; box-shadow: 0 0 0 2px rgb(20 184 166 / 0.4), 0 0 12px rgb(20 184 166 / 0.35) !important; }
+.piano-active-emerald-black { background: linear-gradient(180deg, rgb(16 185 129 / 0.7) 0%, rgb(4 120 87 / 0.9) 100%) !important; border-color: rgb(16 185 129) !important; box-shadow: 0 0 0 2px rgb(16 185 129 / 0.4), 0 0 12px rgb(16 185 129 / 0.35) !important; }
+.piano-active-lime-black { background: linear-gradient(180deg, rgb(132 204 22 / 0.7) 0%, rgb(77 124 15 / 0.9) 100%) !important; border-color: rgb(132 204 22) !important; box-shadow: 0 0 0 2px rgb(132 204 22 / 0.4), 0 0 12px rgb(132 204 22 / 0.35) !important; }
+.piano-active-violet-black { background: linear-gradient(180deg, rgb(139 92 246 / 0.7) 0%, rgb(109 40 217 / 0.9) 100%) !important; border-color: rgb(139 92 246) !important; box-shadow: 0 0 0 2px rgb(139 92 246 / 0.4), 0 0 12px rgb(139 92 246 / 0.35) !important; }
+.piano-active-fuchsia-black { background: linear-gradient(180deg, rgb(217 70 239 / 0.7) 0%, rgb(162 28 175 / 0.9) 100%) !important; border-color: rgb(217 70 239) !important; box-shadow: 0 0 0 2px rgb(217 70 239 / 0.4), 0 0 12px rgb(217 70 239 / 0.35) !important; }
+.piano-active-sky-black { background: linear-gradient(180deg, rgb(14 165 233 / 0.7) 0%, rgb(2 132 199 / 0.9) 100%) !important; border-color: rgb(14 165 233) !important; box-shadow: 0 0 0 2px rgb(14 165 233 / 0.4), 0 0 12px rgb(14 165 233 / 0.35) !important; }
+
+/* Highlighted black key labels */
+.piano-hl-pink-black .piano-black-key-label,
+.piano-hl-rose-black .piano-black-key-label,
+.piano-hl-orange-black .piano-black-key-label,
+.piano-hl-amber-black .piano-black-key-label,
+.piano-hl-blue-black .piano-black-key-label,
+.piano-hl-cyan-black .piano-black-key-label,
+.piano-hl-teal-black .piano-black-key-label,
+.piano-hl-emerald-black .piano-black-key-label,
+.piano-hl-lime-black .piano-black-key-label,
+.piano-hl-violet-black .piano-black-key-label,
+.piano-hl-fuchsia-black .piano-black-key-label,
+.piano-hl-sky-black .piano-black-key-label {
+  color: rgb(255 255 255 / 0.95);
+}
+
+/* Highlighted white key labels */
+.piano-hl-pink .piano-white-key-label,
+.piano-hl-rose .piano-white-key-label,
+.piano-hl-orange .piano-white-key-label,
+.piano-hl-amber .piano-white-key-label,
+.piano-hl-blue .piano-white-key-label,
+.piano-hl-cyan .piano-white-key-label,
+.piano-hl-teal .piano-white-key-label,
+.piano-hl-emerald .piano-white-key-label,
+.piano-hl-lime .piano-white-key-label,
+.piano-hl-violet .piano-white-key-label,
+.piano-hl-fuchsia .piano-white-key-label,
+.piano-hl-sky .piano-white-key-label {
+  color: rgb(60 60 70);
+}
+
+.dark .piano-hl-pink .piano-white-key-label,
+.dark .piano-hl-rose .piano-white-key-label,
+.dark .piano-hl-orange .piano-white-key-label,
+.dark .piano-hl-amber .piano-white-key-label,
+.dark .piano-hl-blue .piano-white-key-label,
+.dark .piano-hl-cyan .piano-white-key-label,
+.dark .piano-hl-teal .piano-white-key-label,
+.dark .piano-hl-emerald .piano-white-key-label,
+.dark .piano-hl-lime .piano-white-key-label,
+.dark .piano-hl-violet .piano-white-key-label,
+.dark .piano-hl-fuchsia .piano-white-key-label,
+.dark .piano-hl-sky .piano-white-key-label {
+  color: rgb(40 40 50);
+}
+
+/* ── Piano live mic markers ──────────────────────────── */
+
+@keyframes piano-live-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgb(99 102 241 / 0.4);
+  }
+  50% {
+    box-shadow: 0 0 16px 4px rgb(99 102 241 / 0.2);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgb(99 102 241 / 0);
+  }
+}
+
+@keyframes piano-live-press {
+  0% { transform: scaleY(1); }
+  40% { transform: scaleY(0.98) translateY(1px); }
+  100% { transform: scaleY(1); }
+}
+
+.piano-live-note {
+  border-color: rgb(99 102 241 / 0.95) !important;
+  background: linear-gradient(
+    180deg,
+    rgb(99 102 241 / 0.15),
+    rgb(99 102 241 / 0.3)
+  ) !important;
+  box-shadow: 0 0 0 2px rgb(99 102 241 / 0.3), 0 0 12px rgb(99 102 241 / 0.2) !important;
+  animation: piano-live-pulse 420ms ease-out;
+}
+
+.piano-live-note.piano-black-key {
+  background: linear-gradient(
+    180deg,
+    rgb(99 102 241 / 0.6),
+    rgb(67 56 202 / 0.8)
+  ) !important;
+}
+
+.piano-live-note-shake {
+  animation:
+    piano-live-pulse 420ms ease-out,
+    piano-live-press 280ms ease-in-out;
+}
+
+.piano-live-note-unstable {
+  border-color: rgb(245 158 11 / 0.85) !important;
+  background: linear-gradient(
+    180deg,
+    rgb(245 158 11 / 0.08),
+    rgb(245 158 11 / 0.18)
+  ) !important;
+}
+
+.piano-live-note-unstable.piano-black-key {
+  background: linear-gradient(
+    180deg,
+    rgb(245 158 11 / 0.4),
+    rgb(180 83 9 / 0.6)
+  ) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fretboard-live-note,
+  .fretboard-live-note-shake,
+  .fretboard-live-note-unstable,
+  .piano-live-note,
+  .piano-live-note-shake,
+  .piano-live-note-unstable,
+  .tuner-note-carousel-run,
+  .tuner-arc-drift,
+  .tuner-note-perfect,
+  .studio-cell-playing,
+  .studio-note-playing {
+    animation: none !important;
+  }
+}
+
+/* ── Studio Grid Playhead Highlight ──────────────────── */
+
+@keyframes studio-beat-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgb(252 38 70 / 0.3);
+  }
+  50% {
+    box-shadow: 0 0 8px 2px rgb(252 38 70 / 0.15);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgb(252 38 70 / 0);
+  }
+}
+
+/* Highlighted beat column cell during playback */
+.studio-cell-playing {
+  background: rgb(252 38 70 / 0.12) !important;
+  border-color: rgb(252 38 70 / 0.4) !important;
+  animation: studio-beat-pulse 350ms ease-out;
+}
+
+/* Note button inside the playing column */
+.studio-note-playing {
+  background: rgb(252 38 70 / 0.25) !important;
+  border-color: rgb(252 38 70 / 0.7) !important;
+  color: rgb(252 38 70) !important;
+  box-shadow: 0 0 6px 1px rgb(252 38 70 / 0.25);
+  animation: studio-beat-pulse 350ms ease-out;
+}
+
+/* Dark mode adjustments for studio playhead */
+.dark .studio-cell-playing {
+  background: rgb(252 80 100 / 0.15) !important;
+  border-color: rgb(252 80 100 / 0.45) !important;
+}
+
+.dark .studio-note-playing {
+  background: rgb(252 80 100 / 0.3) !important;
+  border-color: rgb(252 80 100 / 0.7) !important;
+  color: rgb(255 160 175) !important;
+  box-shadow: 0 0 8px 1px rgb(252 80 100 / 0.3);
+}
+
+/* ── Studio Multi-select Highlight ───────────────────── */
+
+.studio-multi-selected {
+  outline: 2px solid rgb(252 38 70 / 0.6) !important;
+  outline-offset: -1px;
+  background: rgb(252 38 70 / 0.08) !important;
+}
+
+.studio-multi-selected[data-note-btn] {
+  background: rgb(252 38 70 / 0.2) !important;
+  border-color: rgb(252 38 70 / 0.6) !important;
+}
+
+.dark .studio-multi-selected {
+  outline-color: rgb(252 80 100 / 0.6) !important;
+  background: rgb(252 80 100 / 0.1) !important;
+}
+
+.dark .studio-multi-selected[data-note-btn] {
+  background: rgb(252 80 100 / 0.25) !important;
+  border-color: rgb(252 80 100 / 0.6) !important;
+}
+
+/* ── Effect palette drag ghost ───────────────────────── */
+.studio-effect-drag-ghost {
+  position: fixed;
+  top: -100px;
+  left: -100px;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: white;
+  background: rgb(252 38 70);
+  box-shadow:
+    0 4px 12px rgb(0 0 0 / 0.2),
+    0 0 0 2px rgb(252 38 70 / 0.4);
+  pointer-events: none;
+  z-index: 99999;
+}
+
+/* ── Drop target highlights ──────────────────────────── */
+.studio-effect-drop-target {
+  outline: 2px solid rgb(252 38 70) !important;
+  outline-offset: -1px;
+  background: rgb(252 38 70 / 0.15) !important;
+  transition: outline 0.1s ease, background 0.1s ease;
+}
+
+.studio-effect-drop-target-beat {
+  outline: 2px dashed rgb(252 38 70 / 0.5) !important;
+  outline-offset: -1px;
+  background: rgb(252 38 70 / 0.08) !important;
+  transition: outline 0.1s ease, background 0.1s ease;
+}
+
+.dark .studio-effect-drop-target {
+  outline-color: rgb(252 80 100) !important;
+  background: rgb(252 80 100 / 0.2) !important;
+}
+
+.dark .studio-effect-drop-target-beat {
+  outline-color: rgb(252 80 100 / 0.5) !important;
+  background: rgb(252 80 100 / 0.1) !important;
+}
+
+/* Grid cells glow when effect drag is active over grid */
+body.studio-effect-dragging .studio-grid-cell {
+  transition:
+    outline 0.15s ease,
+    background 0.15s ease;
+}
+
+body.studio-effect-dragging .studio-note-btn {
+  transition:
+    outline 0.15s ease,
+    background 0.15s ease,
+    transform 0.15s ease;
+}
+
+/* Subtle pulse on all cells when dragging (inviting the drop) */
+body.studio-effect-dragging[data-effect-level="beat"] .studio-grid-cell {
+  border-color: rgb(252 38 70 / 0.3);
+}
+
+body.studio-effect-dragging[data-effect-level="note"] .studio-note-btn {
+  border-color: rgb(245 158 11 / 0.3);
+}
+
+/* ── Theme Switch View Transition (left → right sweep) ── */
+
+::view-transition-group(root) {
+  animation-duration: 0ms;
+}
+
+::view-transition-old(root) {
+  animation: theme-sweep-out 420ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+::view-transition-new(root) {
+  animation: theme-sweep-in 420ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes theme-sweep-in {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0% 0 0);
+  }
+}
+
+@keyframes theme-sweep-out {
+  from {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+  to {
+    clip-path: inset(0 0 0 100%);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
+}
+
+/* ── App Icon Aura Effect ─────────────────────────────── */
+
+.app-icon-aura {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* explicit size so absolute Particles canvas is contained within */
+  width: 2.5rem;
+  height: 2.5rem;
+  overflow: visible;
+}
+
+/* soft glow halo behind the icon */
+.app-icon-aura::before {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  background: radial-gradient(
+    circle,
+    rgb(252 38 70 / 0.5) 0%,
+    rgb(252 38 70 / 0.18) 45%,
+    transparent 72%
+  );
+  filter: blur(8px);
+  border-radius: 50%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.app-icon-aura img {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Fingering Routine: wrong-note shake ────────────── */
+@keyframes wrong-note-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-4px);
+  }
+  40% {
+    transform: translateX(4px);
+  }
+  60% {
+    transform: translateX(-2px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+}
+
+.animate-wrong-shake {
+  animation: wrong-note-shake 0.3s ease-in-out;
+}
+

@@ -1,0 +1,168 @@
+// ════════════════════════════════════════════════════════
+// Songbook Data – John Legend
+// ════════════════════════════════════════════════════════
+
+import type { SongEntry } from "../types";
+
+export const JOHN_LEGEND_SONGS: SongEntry[] = [
+  {
+    id: "all-of-me",
+    title: "All of Me",
+    artist: "John Legend",
+    artistSlug: "john-legend",
+    album: "Love in the Future",
+    year: 2013,
+    genre: ["pop", "r-and-b", "soul", "ballad"],
+    difficulty: "intermediate",
+    key: "Em",
+    originalKey: "Fm",
+    capo: 1,
+    tuning: "E A D G B E",
+    bpm: 126,
+    timeSignature: "4/4",
+    chordsUsed: [
+      "Em",
+      "C",
+      "G",
+      "D",
+      "Cmaj7",
+      "Cadd9",
+      "Amadd9",
+      "Am",
+      "Emadd9",
+      "Am/C",
+      "C/D",
+      "Dadd9",
+    ],
+    strummingPattern: { pattern: "D DU DU", bpm: 126 },
+    notes:
+      "Capo 1st fret. Original key is Fm. The verse uses a steady down-up pattern at moderate tempo. Extended chords (Cmaj7, Cadd9, Emadd9) give the song its emotional color.",
+    sections: [
+      {
+        type: "intro",
+        label: "Intro",
+        lines: ["[Em] [C] [G] [D]  x2"],
+      },
+      {
+        type: "verse",
+        label: "Verse 1",
+        lines: [
+          "[Em]What would I [Cmaj7]do without your smart [G]mouth",
+          "Drawing me [D]in, and you kicking me [Em]out",
+          "Got my [C]head spinning, [G]no kidding, I [D]can't pin you [Em]down",
+          "What's going [Cmaj7]on in that beautiful [G]mind",
+          "I'm on your [D]magical mystery [Em]ride",
+          "And I'm [Cadd9]so dizzy, don't [G]know what hit me, but [D]I'll be al[Amadd9]right",
+        ],
+      },
+      {
+        type: "pre-chorus",
+        label: "Pre-Chorus",
+        lines: [
+          "My [Am]head's under [G]water",
+          "But [D]I'm breathing [Amadd9]fine",
+          "You're [G]crazy and I'm [D]out of my mind",
+        ],
+      },
+      {
+        type: "chorus",
+        label: "Chorus",
+        lines: [
+          "'Cause [G]all of me",
+          "Loves [Emadd9]all of you",
+          "Love your [Am/C]curves and all your edges",
+          "All your [C/D]perfect im[D]perfections",
+          "Give your [G]all to me",
+          "I'll give my [Emadd9]all to you",
+          "You're my [Am/C]end and my beginning",
+          "Even [C/D]when I lose I'm [D]winning",
+          "'Cause I give you [Em]all, [C]all of [G]me [Dadd9]",
+          "And you give me [Em]all, [C]all of [G]you, [Dadd9]oh",
+        ],
+      },
+      {
+        type: "verse",
+        label: "Verse 2",
+        lines: [
+          "[Em]How many [C]times do I have to tell [G]you",
+          "Even when you're [D]crying you're beautiful [Em]too",
+          "The world is [C]beating you [G]down, I'm a[D]round through every [Em]mood",
+          "You're my [C]downfall, you're my [G]muse",
+          "My worst dis[D]traction, my rhythm and [Em]blues",
+          "I can't stop [C]singing, it's [G]ringing, in my [D]head for [Am]you",
+        ],
+      },
+      {
+        type: "pre-chorus",
+        label: "Pre-Chorus",
+        lines: [
+          "My [Am]head's under [G]water",
+          "But [D]I'm breathing [Amadd9]fine",
+          "You're [G]crazy and I'm [D]out of my mind",
+        ],
+      },
+      {
+        type: "chorus",
+        label: "Chorus",
+        lines: [
+          "'Cause [G]all of me",
+          "Loves [Emadd9]all of you",
+          "Love your [Am/C]curves and all your edges",
+          "All your [C/D]perfect im[D]perfections",
+          "Give your [G]all to me",
+          "I'll give my [Emadd9]all to you",
+          "You're my [Am/C]end and my beginning",
+          "Even [C/D]when I lose I'm [D]winning",
+          "'Cause I give you [Em]all, [C]all of [G]me [Dadd9]",
+          "And you give me [Em]all, [C]all of [G]you, [Dadd9]oh",
+          "Give me [Am]all of you",
+        ],
+      },
+      {
+        type: "pre-chorus",
+        label: "Pre-Chorus (Bridge)",
+        lines: [
+          "[Am]Cards on the [G]table",
+          "We're [D]both showing [Amadd9]hearts",
+          "[Am]Risking it [G]all, though it's [D]hard",
+        ],
+      },
+      {
+        type: "chorus",
+        label: "Chorus (Final)",
+        lines: [
+          "'Cause [G]all of me",
+          "Loves [Emadd9]all of you",
+          "Love your [Am/C]curves and all your edges",
+          "All your [C/D]perfect im[D]perfections",
+          "Give your [G]all to me",
+          "I'll give my [Emadd9]all to you",
+          "You're my [Am/C]end and my beginning",
+          "Even [C/D]when I lose I'm [D]winning",
+          "'Cause I give you [Em]all, [C]all of [G]me [Dadd9]",
+          "And you give me [Em]all, [C]all of [G]you [Dadd9]",
+        ],
+      },
+      {
+        type: "outro",
+        label: "Outro",
+        lines: [
+          "I give you [Em]all, [C]all of [G]me [D]",
+          "And you give me [Em]all, [C]all of [G]you, [D]oh",
+        ],
+      },
+    ],
+    tags: [
+      "john legend",
+      "all of me",
+      "r&b",
+      "soul",
+      "ballad",
+      "love",
+      "wedding",
+      "2013",
+      "love in the future",
+    ],
+    sortOrder: 0,
+  },
+];

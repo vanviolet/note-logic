@@ -1,0 +1,1 @@
+Di Step 1 Jika ada perubahan Rating scale ataupun languange dalam kondisi ada masih Ada question di Step 3 maka munculkan dialog validasi dulu, informasi bahwa jika anda merubah scale atau languange maka akan menghapus Question, nah jika dia setuju maka tembak api question itu dengan mengirim array kosong [] untuk menghapus question
