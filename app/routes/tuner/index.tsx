@@ -86,8 +86,8 @@ export default function TunerRoute() {
   const { isStarting, isListening, error, start, stop } = useLiveGuitarPitch({
     onPitchFrame: setPitchFrame,
     minFrequency: 65,
-    maxFrequency: 360,
-    rmsThreshold: 0.01,
+    maxFrequency: 800,
+    rmsThreshold: 0.003,
     smoothingAlpha: 0.34,
     lockFrameCount: 2,
   });

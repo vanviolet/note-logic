@@ -16,8 +16,6 @@ const NOTE_NAMES_SHARP = [
   "B",
 ] as const;
 
-type PitchDetector = (buffer: Float32Array) => number | null;
-
 export interface LivePitchFrame {
   frequency: number;
   smoothedFrequency: number;
@@ -37,6 +35,8 @@ interface UseLiveGuitarPitchOptions {
   smoothingAlpha?: number;
   lockFrameCount?: number;
 }
+
+type PitchDetector = (buffer: Float32Array<ArrayBufferLike>) => number | null;
 
 function midiToNote(midi: number) {
   const pitchClass = ((midi % 12) + 12) % 12;
@@ -60,13 +60,48 @@ function computeRms(buffer: Float32Array) {
   return Math.sqrt(sum / buffer.length);
 }
 
+// Fallback AutoCorrelation pitch detection algorithm for extra robustness
+function autoCorrelatePitch(
+  buffer: Float32Array,
+  sampleRate: number,
+  minFreq: number,
+  maxFreq: number
+): number | null {
+  const SIZE = buffer.length;
+  const maxLag = Math.floor(sampleRate / minFreq);
+  const minLag = Math.floor(sampleRate / maxFreq);
+
+  if (maxLag >= SIZE) return null;
+
+  let bestLag = -1;
+  let bestCorrelation = 0;
+
+  // Normalized autocorrelation
+  for (let lag = minLag; lag <= maxLag; lag++) {
+    let sum = 0;
+    for (let i = 0; i < SIZE - lag; i++) {
+      sum += buffer[i] * buffer[i + lag];
+    }
+    if (sum > bestCorrelation) {
+      bestCorrelation = sum;
+      bestLag = lag;
+    }
+  }
+
+  if (bestLag > 0 && bestCorrelation > 0.001) {
+    return sampleRate / bestLag;
+  }
+
+  return null;
+}
+
 export function useLiveGuitarPitch({
   onPitchFrame,
-  minFrequency = 70,
+  minFrequency = 65,
   maxFrequency = 1400,
-  rmsThreshold = 0.012,
-  smoothingAlpha = 0.28,
-  lockFrameCount = 3,
+  rmsThreshold = 0.003,
+  smoothingAlpha = 0.3,
+  lockFrameCount = 2,
 }: UseLiveGuitarPitchOptions = {}) {
   const contextRef = useRef<AudioContext | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -77,6 +112,12 @@ export function useLiveGuitarPitch({
   const detectorRef = useRef<PitchDetector | null>(null);
   const frameBufferRef = useRef<Float32Array<ArrayBuffer> | null>(null);
   const rafIdRef = useRef<number | null>(null);
+
+  // Store onPitchFrame callback in a ref to prevent effect cleanup loops!
+  const onPitchFrameRef = useRef(onPitchFrame);
+  useEffect(() => {
+    onPitchFrameRef.current = onPitchFrame;
+  }, [onPitchFrame]);
 
   const lastSmoothedRef = useRef<number | null>(null);
   const candidateMidiRef = useRef<number | null>(null);
@@ -95,10 +136,14 @@ export function useLiveGuitarPitch({
       rafIdRef.current = null;
     }
 
-    sourceRef.current?.disconnect();
-    highpassRef.current?.disconnect();
-    lowpassRef.current?.disconnect();
-    analyserRef.current?.disconnect();
+    try {
+      sourceRef.current?.disconnect();
+      highpassRef.current?.disconnect();
+      lowpassRef.current?.disconnect();
+      analyserRef.current?.disconnect();
+    } catch {
+      // Ignore disconnect errors
+    }
 
     sourceRef.current = null;
     highpassRef.current = null;
@@ -110,8 +155,8 @@ export function useLiveGuitarPitch({
       streamRef.current = null;
     }
 
-    if (contextRef.current) {
-      void contextRef.current.close();
+    if (contextRef.current && contextRef.current.state !== "closed") {
+      void contextRef.current.close().catch(() => {});
       contextRef.current = null;
     }
 
@@ -125,26 +170,23 @@ export function useLiveGuitarPitch({
     lastEmitAtRef.current = 0;
 
     if (lastHadPitchRef.current) {
-      onPitchFrame?.(null);
+      onPitchFrameRef.current?.(null);
       lastHadPitchRef.current = false;
     }
 
     setIsListening(false);
-  }, [onPitchFrame]);
+  }, []);
 
   const runLoop = useCallback(() => {
-    const analyser = analyserRef.current;
-    const detector = detectorRef.current;
-    const frameBuffer = frameBufferRef.current;
-
-    if (!analyser || !detector || !frameBuffer) return;
+    if (!analyserRef.current || !frameBufferRef.current) return;
 
     const tick = () => {
       const liveAnalyser = analyserRef.current;
       const liveDetector = detectorRef.current;
       const liveBuffer = frameBufferRef.current;
+      const sampleRate = contextRef.current?.sampleRate || 44100;
 
-      if (!liveAnalyser || !liveDetector || !liveBuffer) return;
+      if (!liveAnalyser || !liveBuffer) return;
 
       liveAnalyser.getFloatTimeDomainData(liveBuffer);
 
@@ -155,8 +197,8 @@ export function useLiveGuitarPitch({
 
         if (lastHadPitchRef.current) {
           const now = performance.now();
-          if (now - lastEmitAtRef.current > 180) {
-            onPitchFrame?.(null);
+          if (now - lastEmitAtRef.current > 150) {
+            onPitchFrameRef.current?.(null);
             lastHadPitchRef.current = false;
             lastEmitAtRef.current = now;
           }
@@ -166,7 +208,31 @@ export function useLiveGuitarPitch({
         return;
       }
 
-      const detectedFrequency = liveDetector(liveBuffer);
+      let detectedFrequency: number | null = null;
+
+      if (liveDetector) {
+        try {
+          detectedFrequency = liveDetector(liveBuffer);
+        } catch {
+          detectedFrequency = null;
+        }
+      }
+
+      // Fallback to autocorrelation if YIN didn't return a valid frequency
+      if (
+        !detectedFrequency ||
+        Number.isNaN(detectedFrequency) ||
+        detectedFrequency < minFrequency ||
+        detectedFrequency > maxFrequency
+      ) {
+        detectedFrequency = autoCorrelatePitch(
+          liveBuffer,
+          sampleRate,
+          minFrequency,
+          maxFrequency
+        );
+      }
+
       if (
         !detectedFrequency ||
         Number.isNaN(detectedFrequency) ||
@@ -196,18 +262,18 @@ export function useLiveGuitarPitch({
       if (candidateCountRef.current >= lockFrameCount) {
         const now = performance.now();
         const canEmit =
-          lastEmitMidiRef.current !== midi || now - lastEmitAtRef.current > 120;
+          lastEmitMidiRef.current !== midi || now - lastEmitAtRef.current > 100;
 
         if (canEmit) {
           const { note, octave } = midiToNote(midi);
-          onPitchFrame?.({
+          onPitchFrameRef.current?.({
             frequency: detectedFrequency,
             smoothedFrequency,
             midi,
             cents,
             note,
             octave,
-            confidence: Math.min(1, rms / 0.08),
+            confidence: Math.min(1, rms / 0.05),
             timestamp: Date.now(),
           });
 
@@ -225,7 +291,6 @@ export function useLiveGuitarPitch({
     lockFrameCount,
     maxFrequency,
     minFrequency,
-    onPitchFrame,
     rmsThreshold,
     smoothingAlpha,
   ]);
@@ -238,14 +303,27 @@ export function useLiveGuitarPitch({
       setIsStarting(true);
       setError(null);
 
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: false,
-          noiseSuppression: true,
-          autoGainControl: false,
-          channelCount: 1,
-        },
-      });
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error(
+          "Izin microphone atau MediaDevices tidak didukung oleh browser Anda."
+        );
+      }
+
+      let mediaStream: MediaStream;
+      try {
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: { ideal: false },
+            noiseSuppression: { ideal: true },
+            autoGainControl: { ideal: true },
+          },
+        });
+      } catch {
+        // Fallback to basic audio constraints if advanced properties fail
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
+      }
 
       const AudioCtx =
         window.AudioContext ||
@@ -253,7 +331,7 @@ export function useLiveGuitarPitch({
           .webkitAudioContext as typeof AudioContext | undefined);
 
       if (!AudioCtx) {
-        throw new Error("Web Audio API is not supported in this browser.");
+        throw new Error("Web Audio API tidak didukung di browser ini.");
       }
 
       const context = new AudioCtx();
@@ -265,7 +343,7 @@ export function useLiveGuitarPitch({
 
       const highpass = context.createBiquadFilter();
       highpass.type = "highpass";
-      highpass.frequency.value = 60;
+      highpass.frequency.value = 50;
       highpass.Q.value = 0.7;
 
       const lowpass = context.createBiquadFilter();
@@ -275,17 +353,21 @@ export function useLiveGuitarPitch({
 
       const analyser = context.createAnalyser();
       analyser.fftSize = 4096;
-      analyser.smoothingTimeConstant = 0.12;
+      analyser.smoothingTimeConstant = 0.1;
 
       source.connect(highpass);
       highpass.connect(lowpass);
       lowpass.connect(analyser);
 
-      const detector = Pitchfinder.YIN({
-        sampleRate: context.sampleRate,
-        threshold: 0.12,
-        probabilityThreshold: 0.85,
-      });
+      let detector: PitchDetector | null = null;
+      try {
+        detector = Pitchfinder.YIN({
+          sampleRate: context.sampleRate,
+          threshold: 0.15,
+        }) as PitchDetector;
+      } catch {
+        detector = null;
+      }
 
       contextRef.current = context;
       streamRef.current = mediaStream;
@@ -293,20 +375,22 @@ export function useLiveGuitarPitch({
       highpassRef.current = highpass;
       lowpassRef.current = lowpass;
       analyserRef.current = analyser;
-      detectorRef.current = detector as PitchDetector;
+      detectorRef.current = detector;
       frameBufferRef.current = new Float32Array(
-        analyser.fftSize,
+        analyser.fftSize
       ) as Float32Array<ArrayBuffer>;
 
       setIsListening(true);
       runLoop();
       return true;
     } catch (err) {
-      setError(
+      const errMsg =
         err instanceof Error
-          ? err.message
-          : "Failed to initialize microphone pitch detection.",
-      );
+          ? err.name === "NotAllowedError" || err.name === "PermissionDeniedError"
+            ? "Izin akses mikrofon ditolak. Mohon izinkan mikrofon di browser Anda."
+            : err.message
+          : "Gagal menginisialisasi deteksi nada mikrofon.";
+      setError(errMsg);
       stop();
       return false;
     } finally {
@@ -314,7 +398,12 @@ export function useLiveGuitarPitch({
     }
   }, [isListening, isStarting, runLoop, stop]);
 
-  useEffect(() => stop, [stop]);
+  // Clean up on unmount
+  useEffect(() => {
+    return () => {
+      stop();
+    };
+  }, [stop]);
 
   return {
     isStarting,
