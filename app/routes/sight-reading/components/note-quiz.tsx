@@ -451,13 +451,41 @@ export const NoteQuiz = memo(function NoteQuiz({
         const optIdx = currentQuestion.options.findIndex(
           (o) => o === `${frame.note}${frame.octave}` || o === frame.note,
         );
-        handleChoiceAnswer(
-          isMatch
-            ? currentQuestion.correctIdx
-            : optIdx !== -1
-              ? optIdx
-              : (currentQuestion.correctIdx + 1) % currentQuestion.options.length,
-        );
+
+        if (isMatch) {
+          handleChoiceAnswer(currentQuestion.correctIdx);
+        } else if (optIdx !== -1) {
+          handleChoiceAnswer(optIdx);
+        } else {
+          // Note detected by mic was wrong and not among the 4 options
+          const isSameLetterWrongOctave =
+            frame.note === targetNote.noteName && frame.octave !== targetNote.octave;
+
+          setWrongSelection({
+            noteName: frame.note,
+            octave: frame.octave,
+            displayName: `${frame.note}${frame.octave}`,
+            isSameLetterWrongOctave,
+          });
+
+          setQuiz((prev) => {
+            if (!prev) return prev;
+            const newAnswers = [...prev.answers];
+            newAnswers[prev.currentIdx] = -1;
+            return {
+              ...prev,
+              answers: newAnswers,
+            };
+          });
+
+          setFeedback("wrong");
+          playSound(frame.note, frame.octave);
+          setFeedbackText(
+            isSameLetterWrongOctave
+              ? `Salah Oktaf! Mikrofon mendeteksi ${frame.note}${frame.octave} — Not yang benar adalah ${targetNote.displayName}.`
+              : `Salah — Mikrofon mendeteksi nada ${frame.note}${frame.octave}. Not yang benar pada paranada adalah ${targetNote.displayName}.`,
+          );
+        }
       }
     },
     [
@@ -468,6 +496,7 @@ export const NoteQuiz = memo(function NoteQuiz({
       handlePianoAnswer,
       handleFretboardAnswer,
       handleChoiceAnswer,
+      playSound,
     ],
   );
 
@@ -479,9 +508,9 @@ export const NoteQuiz = memo(function NoteQuiz({
     error: micError,
   } = useLiveGuitarPitch({
     onPitchFrame: handleLivePitchFrame,
-    rmsThreshold: 0.015,
+    rmsThreshold: 0.003,
     smoothingAlpha: 0.32,
-    lockFrameCount: 3,
+    lockFrameCount: 2,
   });
 
   // Stop mic on unmount
